@@ -1,0 +1,7 @@
+DOMAIN-SUFFIX,mosy.xyz
+DOMAIN-SUFFIX,nas.cdb.ink
+IP-CIDR,10.18.0.0/16,no-resolve
+IP-CIDR,10.88.0.0/16,no-resolve
+IP-CIDR,10.118.0.0/16,no-resolve
+IP-CIDR,10.201.0.0/16,no-resolve
+IP-CIDR,192.168.3.0/24,no-resolve
