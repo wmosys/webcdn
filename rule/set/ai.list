@@ -68,7 +68,7 @@ DOMAIN-SUFFIX,jules.google.com
 DOMAIN-SUFFIX,geller-pa.googleapis.com
 DOMAIN-SUFFIX,aisandbox-pa.googleapis.com
 DOMAIN-SUFFIX,aida.googleapis.com
-
+DOMAIN-SUFFIX,gemini.gstatic.com
 
 # Microsoft Copilot
 DOMAIN,api.msn.com
