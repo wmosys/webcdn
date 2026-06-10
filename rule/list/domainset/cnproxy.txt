@@ -1,0 +1,5 @@
+# 自己的域名
+DOMAIN-SUFFIX,wmosys.asia
+# 八戒订阅地址不支持混淆连接
+DOMAIN-SUFFIX,bmjsub.org
+DOMAIN-SUFFIX,bjnet2.com
