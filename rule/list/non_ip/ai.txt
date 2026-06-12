@@ -1,0 +1,5 @@
+#########################################
+# AI 相关域名
+#########################################
+DOMAIN-SUFFIX,api.doghubx.top
+DOMAIN-SUFFIX,ai.doghubx.top
