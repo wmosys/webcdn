@@ -1,3 +1,6 @@
+#########################################
+# Globla Domain
+#########################################
 DOMAIN-SUFFIX,mikanani.me
 DOMAIN-SUFFIX,wiki.metacubex.one
 DOMAIN-SUFFIX,element-plus.org
@@ -10,3 +13,4 @@ DOMAIN-SUFFIX,smokingpipes.com
 DOMAIN-SUFFIX,pipeuncle.com
 DOMAIN-SUFFIX,70cigars.com
 DOMAIN-SUFFIX,tecon-gmbh.de
+################## EOF ##################

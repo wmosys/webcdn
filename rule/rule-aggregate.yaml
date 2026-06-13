@@ -1,0 +1,112 @@
+base:
+  blackmatrix7_raw: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash"
+
+log:
+  path: "rule/list/build-log.md"
+
+groups:
+  Google:
+    outputs:
+      non_ip:
+        path: "rule/list/non_ip/google.txt"
+        include: [DOMAIN, DOMAIN-SUFFIX, DOMAIN-KEYWORD, DOMAIN-WILDCARD, DOMAIN-REGEX]
+      ip:
+        path: "rule/list/ip/google.txt"
+        include: [IP-CIDR, IP-CIDR6, IP-SUFFIX, IP-ASN]
+    sources:
+      - Google
+      - GoogleDrive
+      - GoogleSearch
+      - GoogleVoice
+      - Chromecast
+      - GoogleFCM
+
+  # 微软    
+  Microsoft:
+    outputs:
+      non_ip:
+        path: "rule/list/non_ip/microsoft.txt"
+        include: [DOMAIN, DOMAIN-SUFFIX, DOMAIN-KEYWORD, DOMAIN-WILDCARD, DOMAIN-REGEX]
+      ip:
+        path: "rule/list/ip/microsoft.txt"
+        include: [IP-CIDR, IP-CIDR6, IP-SUFFIX, IP-ASN]
+    sources:
+      - Microsoft
+      - OneDrive
+      - Teams
+      - MicrosoftEdge
+
+  # 开发平台
+  Develop:
+    outputs:
+      non_ip:
+        path: "rule/list/non_ip/develop.txt"
+        include: [DOMAIN, DOMAIN-SUFFIX, DOMAIN-KEYWORD, DOMAIN-WILDCARD, DOMAIN-REGEX]
+      ip:
+        path: "rule/list/ip/develop.txt"
+        include: [IP-CIDR, IP-CIDR6, IP-SUFFIX, IP-ASN]
+    sources:
+      - Developer
+      - AppleDev
+      - GitHub
+      - GitLab
+      - GitBook
+      - Atlassian
+      - Docker
+      - Jetbrains
+      - HashiCorp
+      - Npmjs
+      - Python
+      - Android
+      - Ubuntu
+      - Mozilla
+      - Vercel
+      - DigitalOcean
+      - Heroku
+      - Figma
+
+  # 即时通讯
+  Communication:
+    outputs:
+      non_ip:
+        path: "rule/list/non_ip/communication.txt"
+        include: [DOMAIN, DOMAIN-SUFFIX, DOMAIN-KEYWORD, DOMAIN-WILDCARD, DOMAIN-REGEX]
+      ip:
+        path: "rule/list/ip/communication.txt"
+        include: [IP-CIDR, IP-CIDR6, IP-SUFFIX, IP-ASN]
+    sources:
+      - Telegram
+      - TelegramNL
+      - TelegramSG
+      - TelegramUS
+      - Discord
+      - WhatsApp
+      - Line
+      - KakaoTalk
+      - Zalo
+      - PotatoChat
+      - Zoom
+      - Clubhouse
+      - ClubhouseIP
+  
+  # Social
+  Social:
+    outputs:
+      non_ip:
+        path: "rule/list/non_ip/social.txt"
+        include: [DOMAIN, DOMAIN-SUFFIX, DOMAIN-KEYWORD, DOMAIN-WILDCARD, DOMAIN-REGEX]
+      ip:
+        path: "rule/list/ip/social.txt"
+        include: [IP-CIDR, IP-CIDR6, IP-SUFFIX, IP-ASN]
+    sources:
+      - Facebook
+      - Instagram
+      - Threads
+      - Twitter
+      - LinkedIn
+      - Reddit
+      - Tumblr
+      - VK
+      - TruthSocial
+      - 4chan
+      - Blued
