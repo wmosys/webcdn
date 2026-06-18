@@ -9,11 +9,17 @@ filters:
   ip: [IP-CIDR, IP-CIDR6, IP-SUFFIX, IP-ASN]
 
 groups:
+  ChinaMax:
+    outputs:
+      non_ip: {path: "rule/list/non_ip/ChinaMax.txt", include: ["$domain"]}
+      ip: {path: "rule/list/ip/ChinaMax.txt", include: ["$ip"]}
+    sources: [ChinaMax]
+
   Google:
     outputs:
       non_ip: {path: "rule/list/non_ip/google.txt", include: ["$domain"]}
       ip: {path: "rule/list/ip/google.txt", include: ["$ip"]}
-    sources: [Google, GoogleDrive, GoogleSearch, GoogleVoice, Chromecast, GoogleFCM]
+    sources: [Google, Chromecast, GoogleFCM]
 
   # 微软    
   Microsoft:
