@@ -2,7 +2,8 @@ name: Update Rules
 
 on:
   schedule:
-    - cron: "0 18 * * *"
+    - cron: "0 2 * * *"
+      timezone: "Asia/Shanghai"
   workflow_dispatch:
 
 concurrency:
@@ -15,20 +16,14 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      TZ: Asia/Shanghai
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install dependencies
-        run: python -m pip install -r requirements.txt
+        uses: actions/checkout@v6
 
       - name: Generate rules
-        run: python scripts/aggregate_rules.py --config rule/rule-aggregate.yaml
+        run: python3 scripts/aggregate_rules.py --config rule/rule-aggregate.yaml
 
       - name: Commit changes
         run: |

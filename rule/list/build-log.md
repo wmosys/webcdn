@@ -1,6 +1,6 @@
 # 规则编译日志
 
-- 编译日期：2026-06-18 03:23:52 +0000
+- 编译日期：2026-06-18 13:59:59 +0800
 
 ## Google
 - 输出文件：`rule/list/non_ip/google.txt`（711 条）
@@ -58,14 +58,15 @@
 - 无
 
 ## Communication
-- 输出文件：`rule/list/non_ip/communication.txt`（82 条）
-- 输出文件：`rule/list/ip/communication.txt`（131 条）
+- 输出文件：`rule/list/non_ip/communication.txt`（88 条）
+- 输出文件：`rule/list/ip/communication.txt`（142 条）
 - 成功源：
 - `Telegram` -> `https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Telegram/Telegram.list`
 - `TelegramNL` -> `https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/TelegramNL/TelegramNL.list`
 - `TelegramSG` -> `https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/TelegramSG/TelegramSG.list`
 - `TelegramUS` -> `https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/TelegramUS/TelegramUS.list`
 - `Discord` -> `https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Discord/Discord.list`
+- `Whatsapp` -> `https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Whatsapp/Whatsapp.list`
 - `Line` -> `https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Line/Line.list`
 - `KakaoTalk` -> `https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/KakaoTalk/KakaoTalk.list`
 - `Zalo` -> `https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Zalo/Zalo.list`
@@ -73,8 +74,7 @@
 - `Clubhouse` -> `https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Clubhouse/Clubhouse.list`
 - `ClubhouseIP` -> `https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/ClubhouseIP/ClubhouseIP.list`
 - 失败源：
-- `WhatsApp` -> `https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/WhatsApp/WhatsApp.list`（HTTP 404 Not Found）
-- `Zoom` -> `https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Zoom/Zoom.list`（HTTP 404 Not Found）
+- 无
 - 重复源：
 - 无
 

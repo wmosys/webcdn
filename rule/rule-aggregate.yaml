@@ -4,109 +4,41 @@ base:
 log:
   path: "rule/list/build-log.md"
 
+filters:
+  domain: [DOMAIN, DOMAIN-SUFFIX, DOMAIN-KEYWORD, DOMAIN-WILDCARD, DOMAIN-REGEX]
+  ip: [IP-CIDR, IP-CIDR6, IP-SUFFIX, IP-ASN]
+
 groups:
   Google:
     outputs:
-      non_ip:
-        path: "rule/list/non_ip/google.txt"
-        include: [DOMAIN, DOMAIN-SUFFIX, DOMAIN-KEYWORD, DOMAIN-WILDCARD, DOMAIN-REGEX]
-      ip:
-        path: "rule/list/ip/google.txt"
-        include: [IP-CIDR, IP-CIDR6, IP-SUFFIX, IP-ASN]
-    sources:
-      - Google
-      - GoogleDrive
-      - GoogleSearch
-      - GoogleVoice
-      - Chromecast
-      - GoogleFCM
+      non_ip: {path: "rule/list/non_ip/google.txt", include: ["$domain"]}
+      ip: {path: "rule/list/ip/google.txt", include: ["$ip"]}
+    sources: [Google, GoogleDrive, GoogleSearch, GoogleVoice, Chromecast, GoogleFCM]
 
   # 微软    
   Microsoft:
     outputs:
-      non_ip:
-        path: "rule/list/non_ip/microsoft.txt"
-        include: [DOMAIN, DOMAIN-SUFFIX, DOMAIN-KEYWORD, DOMAIN-WILDCARD, DOMAIN-REGEX]
-      ip:
-        path: "rule/list/ip/microsoft.txt"
-        include: [IP-CIDR, IP-CIDR6, IP-SUFFIX, IP-ASN]
-    sources:
-      - Microsoft
-      - OneDrive
-      - Teams
-      - MicrosoftEdge
+      non_ip: {path: "rule/list/non_ip/microsoft.txt", include: ["$domain"]}
+      # ip: {path: "rule/list/ip/microsoft.txt", include: ["$ip"]}
+    sources: [Microsoft]
 
   # 开发平台
   Develop:
     outputs:
-      non_ip:
-        path: "rule/list/non_ip/develop.txt"
-        include: [DOMAIN, DOMAIN-SUFFIX, DOMAIN-KEYWORD, DOMAIN-WILDCARD, DOMAIN-REGEX]
-      ip:
-        path: "rule/list/ip/develop.txt"
-        include: [IP-CIDR, IP-CIDR6, IP-SUFFIX, IP-ASN]
-    sources:
-      - Developer
-      - AppleDev
-      - GitHub
-      - GitLab
-      - GitBook
-      - Atlassian
-      - Docker
-      - Jetbrains
-      - HashiCorp
-      - Npmjs
-      - Python
-      - Android
-      - Ubuntu
-      - Mozilla
-      - Vercel
-      - DigitalOcean
-      - Heroku
-      - Figma
+      non_ip: {path: "rule/list/non_ip/develop.txt", include: ["$domain"]}
+      ip: {path: "rule/list/ip/develop.txt", include: ["$ip"]}
+    sources: [Developer, AppleDev, GitHub, GitLab, GitBook, Atlassian, Docker, Jetbrains, HashiCorp, Npmjs, Python, Android, Ubuntu, Mozilla, Vercel, DigitalOcean, Heroku, Figma]
 
   # 即时通讯
   Communication:
     outputs:
-      non_ip:
-        path: "rule/list/non_ip/communication.txt"
-        include: [DOMAIN, DOMAIN-SUFFIX, DOMAIN-KEYWORD, DOMAIN-WILDCARD, DOMAIN-REGEX]
-      ip:
-        path: "rule/list/ip/communication.txt"
-        include: [IP-CIDR, IP-CIDR6, IP-SUFFIX, IP-ASN]
-    sources:
-      - Telegram
-      - TelegramNL
-      - TelegramSG
-      - TelegramUS
-      - Discord
-      - WhatsApp
-      - Line
-      - KakaoTalk
-      - Zalo
-      - PotatoChat
-      - Zoom
-      - Clubhouse
-      - ClubhouseIP
+      non_ip: {path: "rule/list/non_ip/communication.txt", include: ["$domain"]}
+      ip: {path: "rule/list/ip/communication.txt", include: ["$ip"]}
+    sources: [Telegram, TelegramNL, TelegramSG, TelegramUS, Discord, Whatsapp, Line, KakaoTalk, Zalo, PotatoChat, Clubhouse, ClubhouseIP]
   
-  # Social
+  # 社交媒体
   Social:
     outputs:
-      non_ip:
-        path: "rule/list/non_ip/social.txt"
-        include: [DOMAIN, DOMAIN-SUFFIX, DOMAIN-KEYWORD, DOMAIN-WILDCARD, DOMAIN-REGEX]
-      ip:
-        path: "rule/list/ip/social.txt"
-        include: [IP-CIDR, IP-CIDR6, IP-SUFFIX, IP-ASN]
-    sources:
-      - Facebook
-      - Instagram
-      - Threads
-      - Twitter
-      - LinkedIn
-      - Reddit
-      - Tumblr
-      - VK
-      - TruthSocial
-      - 4chan
-      - Blued
+      non_ip: {path: "rule/list/non_ip/social.txt", include: ["$domain"]}
+      ip: {path: "rule/list/ip/social.txt", include: ["$ip"]}
+    sources: [Facebook, Instagram, Threads, Twitter, LinkedIn, Reddit, Tumblr, VK, TruthSocial, 4chan, Blued]

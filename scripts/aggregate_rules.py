@@ -6,6 +6,8 @@ import ast
 import sys
 from dataclasses import dataclass, field
 from datetime import datetime
+from datetime import timezone
+from datetime import timedelta
 from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
@@ -19,6 +21,7 @@ except ImportError:  # pragma: no cover
 
 IP_RULE_TYPES = {"IP-CIDR", "IP-CIDR6", "IP-ASN"}
 ALL_RULE_TYPES = {"*"}
+BEIJING_TZ = timezone(timedelta(hours=8))
 
 
 @dataclass(frozen=True)
@@ -187,14 +190,80 @@ def parse_list(lines: list[YamlLine], index: int, expected_indent: int) -> tuple
 
 def parse_scalar(token: str) -> Any:
     token = token.strip()
+    if token.startswith("{") and token.endswith("}"):
+        inner = token[1:-1].strip()
+        if not inner:
+            return {}
+
+        mapping: dict[str, Any] = {}
+        for item in split_inline_items(inner):
+            key, sep, value = item.partition(":")
+            if not sep:
+                raise ValueError(f"无效的行内映射项：{item}")
+            key = key.strip()
+            if not key:
+                raise ValueError(f"行内映射包含空键名：{item}")
+            mapping[key] = parse_scalar(value.strip())
+        return mapping
+
     if token.startswith("[") and token.endswith("]"):
         inner = token[1:-1].strip()
         if not inner:
             return []
-        return [parse_scalar(item.strip()) for item in inner.split(",")]
+        return [parse_scalar(item.strip()) for item in split_inline_items(inner)]
     if len(token) >= 2 and token[0] == token[-1] and token[0] in {"'", '"'}:
         return ast.literal_eval(token)
     return token
+
+
+def split_inline_items(text: str) -> list[str]:
+    items: list[str] = []
+    current: list[str] = []
+    quote: str | None = None
+    depth = 0
+
+    for char in text:
+        if quote:
+            current.append(char)
+            if char == quote:
+                quote = None
+            continue
+
+        if char in {"'", '"'}:
+            quote = char
+            current.append(char)
+            continue
+
+        if char in "[{":
+            depth += 1
+            current.append(char)
+            continue
+
+        if char in "]}":
+            depth -= 1
+            if depth < 0:
+                raise ValueError(f"行内配置括号不匹配：{text}")
+            current.append(char)
+            continue
+
+        if char == "," and depth == 0:
+            item = "".join(current).strip()
+            if item:
+                items.append(item)
+            current = []
+            continue
+
+        current.append(char)
+
+    if quote:
+        raise ValueError(f"行内配置引号不匹配：{text}")
+    if depth != 0:
+        raise ValueError(f"行内配置括号不匹配：{text}")
+
+    item = "".join(current).strip()
+    if item:
+        items.append(item)
+    return items
 
 
 def get_setting(data: dict[str, Any], *keys: str, default: Any = None) -> Any:
@@ -256,22 +325,54 @@ def parse_source_text(text: str, resolved_url: str) -> ParsedSource:
     return ParsedSource(resolved_url=resolved_url, rules=parsed_rules)
 
 
-def normalize_rule_types(value: Any, field_name: str, default: set[str]) -> set[str]:
+def normalize_rule_types(
+    value: Any,
+    field_name: str,
+    default: set[str],
+    filters: dict[str, set[str]] | None = None,
+) -> set[str]:
     if value is None:
         return set(default)
     if not isinstance(value, list):
         raise ValueError(f"{field_name} 必须是列表。")
 
+    filters = filters or {}
     normalized: set[str] = set()
     for item in value:
         if not isinstance(item, str) or not item.strip():
             raise ValueError(f"{field_name} 仅支持非空字符串。")
         item = item.strip()
+        if item.startswith("$"):
+            filter_name = item[1:]
+            if filter_name not in filters:
+                raise ValueError(f"{field_name} 引用了不存在的过滤器：{item}")
+            normalized.update(filters[filter_name])
+            continue
         normalized.add(item if item == "*" else item.upper())
     return normalized
 
 
-def parse_outputs(group_name: str, group_cfg: dict[str, Any], group_include: set[str]) -> list[OutputSpec]:
+def parse_filters(config: dict[str, Any]) -> dict[str, set[str]]:
+    filters_cfg = config.get("filters", {})
+    if filters_cfg is None:
+        return {}
+    if not isinstance(filters_cfg, dict):
+        raise ValueError("filters 必须是映射。")
+
+    filters: dict[str, set[str]] = {}
+    for filter_name, value in filters_cfg.items():
+        if not isinstance(filter_name, str) or not filter_name.strip():
+            raise ValueError("filters 包含空过滤器名称。")
+        filters[filter_name] = normalize_rule_types(value, f"filters.{filter_name}", set(), filters)
+    return filters
+
+
+def parse_outputs(
+    group_name: str,
+    group_cfg: dict[str, Any],
+    group_include: set[str],
+    filters: dict[str, set[str]],
+) -> list[OutputSpec]:
     outputs_cfg = group_cfg.get("outputs")
     if not isinstance(outputs_cfg, dict) or not outputs_cfg:
         raise ValueError(f"{group_name} 缺少 outputs 配置。")
@@ -291,8 +392,8 @@ def parse_outputs(group_name: str, group_cfg: dict[str, Any], group_include: set
             OutputSpec(
                 name=output_name,
                 path=Path(str(output_path)),
-                include=normalize_rule_types(output_cfg.get("include"), f"{group_name}.{output_name}.include", group_include),
-                exclude=normalize_rule_types(output_cfg.get("exclude"), f"{group_name}.{output_name}.exclude", set()),
+                include=normalize_rule_types(output_cfg.get("include"), f"{group_name}.{output_name}.include", group_include, filters),
+                exclude=normalize_rule_types(output_cfg.get("exclude"), f"{group_name}.{output_name}.exclude", set(), filters),
             )
         )
     return specs
@@ -309,14 +410,15 @@ def build_group(
     group_cfg: dict[str, Any],
     base_url: str,
     global_include: set[str],
+    filters: dict[str, set[str]],
     source_cache: dict[str, ParsedSource],
 ) -> GroupResult:
     sources = group_cfg.get("sources")
     if not isinstance(sources, list) or not sources:
         raise ValueError(f"{group_name} 的 sources 必须是非空列表。")
 
-    group_include = normalize_rule_types(group_cfg.get("include"), f"{group_name}.include", global_include)
-    output_specs = parse_outputs(group_name, group_cfg, group_include)
+    group_include = normalize_rule_types(group_cfg.get("include"), f"{group_name}.include", global_include, filters)
+    output_specs = parse_outputs(group_name, group_cfg, group_include, filters)
     outputs = [
         OutputResult(
             name=spec.name,
@@ -401,14 +503,24 @@ def build_group(
     )
 
 
-def write_rule_file(path: Path, build_time: str, rules: list[str]) -> None:
+def write_rule_file(path: Path, build_time: str, rules: list[str], sources: list[SourceRecord]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     content = [
         f"# Build Date: {build_time}",
         f"# Rule Count: {len(rules)}",
-        "",
-        *rules,
+        "# Source:",
     ]
+    if sources:
+        content.extend(f"#   - {record.source}: {record.resolved_url}" for record in sources)
+    else:
+        content.append("#   - none")
+
+    content.extend(
+        [
+            "",
+            *rules,
+        ]
+    )
     path.write_text("\n".join(content).rstrip() + "\n", encoding="utf-8")
 
 
@@ -483,10 +595,11 @@ def main() -> int:
     if not isinstance(groups, dict) or not groups:
         raise ValueError("groups 配置必须是非空映射。")
 
-    global_include = normalize_rule_types(config.get("include"), "include", ALL_RULE_TYPES)
+    filters = parse_filters(config)
+    global_include = normalize_rule_types(config.get("include"), "include", ALL_RULE_TYPES, filters)
     source_cache: dict[str, ParsedSource] = {}
     results: list[GroupResult] = []
-    build_time = datetime.now().astimezone().strftime("%Y-%m-%d %H:%M:%S %z")
+    build_time = datetime.now(BEIJING_TZ).strftime("%Y-%m-%d %H:%M:%S %z")
 
     for group_name, group_cfg in groups.items():
         if not isinstance(group_cfg, dict):
@@ -497,10 +610,11 @@ def main() -> int:
             group_cfg=group_cfg,
             base_url=base_url,
             global_include=global_include,
+            filters=filters,
             source_cache=source_cache,
         )
         for output in result.outputs:
-            write_rule_file(root / output.path, build_time, output.rules)
+            write_rule_file(root / output.path, build_time, output.rules, result.success_sources)
         results.append(result)
 
     write_build_log(root / log_path, build_time, results)
