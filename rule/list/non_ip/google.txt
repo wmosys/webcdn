@@ -1,10 +1,7 @@
-# Build Date: 2026-06-18 14:43:09 +0800
-# Rule Count: 711
+# Build Date: 2026-06-18 15:05:02 +0800
+# Rule Count: 706
 # Source:
 #   - Google: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Google/Google.list
-#   - GoogleDrive: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/GoogleDrive/GoogleDrive.list
-#   - GoogleSearch: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/GoogleSearch/GoogleSearch.list
-#   - GoogleVoice: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/GoogleVoice/GoogleVoice.list
 #   - Chromecast: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Chromecast/Chromecast.list
 #   - GoogleFCM: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/GoogleFCM/GoogleFCM.list
 
@@ -698,11 +695,6 @@ DOMAIN-KEYWORD,blogspot
 DOMAIN-KEYWORD,gmail
 DOMAIN-KEYWORD,google
 DOMAIN-KEYWORD,recaptcha
-DOMAIN,www.googleapis.com
-DOMAIN-SUFFIX,docs.google.com
-DOMAIN-SUFFIX,drive.google.com
-DOMAIN-KEYWORD,www.google.
-DOMAIN,lens.l.google.com
 DOMAIN-KEYWORD,pa.google
 DOMAIN,alt1-mtalk.google.com
 DOMAIN,alt2-mtalk.google.com

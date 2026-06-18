@@ -1,15 +1,22 @@
 # 规则编译日志
 
-- 编译日期：2026-06-18 14:43:09 +0800
+- 编译日期：2026-06-18 15:05:02 +0800
+
+## ChinaMax
+- 输出文件：`rule/list/non_ip/ChinaMax.txt`（112767 条）
+- 输出文件：`rule/list/ip/ChinaMax.txt`（12375 条）
+- 成功源：
+- `ChinaMax` -> `https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/ChinaMax/ChinaMax.list`
+- 失败源：
+- 无
+- 重复源：
+- 无
 
 ## Google
-- 输出文件：`rule/list/non_ip/google.txt`（711 条）
+- 输出文件：`rule/list/non_ip/google.txt`（706 条）
 - 输出文件：`rule/list/ip/google.txt`（31 条）
 - 成功源：
 - `Google` -> `https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Google/Google.list`
-- `GoogleDrive` -> `https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/GoogleDrive/GoogleDrive.list`
-- `GoogleSearch` -> `https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/GoogleSearch/GoogleSearch.list`
-- `GoogleVoice` -> `https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/GoogleVoice/GoogleVoice.list`
 - `Chromecast` -> `https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Chromecast/Chromecast.list`
 - `GoogleFCM` -> `https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/GoogleFCM/GoogleFCM.list`
 - 失败源：
