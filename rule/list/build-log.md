@@ -1,6 +1,6 @@
 # 规则编译日志
 
-- 编译日期：2026-06-18 13:59:59 +0800
+- 编译日期：2026-06-18 14:43:09 +0800
 
 ## Google
 - 输出文件：`rule/list/non_ip/google.txt`（711 条）
@@ -18,13 +18,9 @@
 - 无
 
 ## Microsoft
-- 输出文件：`rule/list/non_ip/microsoft.txt`（682 条）
-- 输出文件：`rule/list/ip/microsoft.txt`（0 条）
+- 输出文件：`rule/list/non_ip/microsoft.txt`（668 条）
 - 成功源：
 - `Microsoft` -> `https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Microsoft/Microsoft.list`
-- `OneDrive` -> `https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/OneDrive/OneDrive.list`
-- `Teams` -> `https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Teams/Teams.list`
-- `MicrosoftEdge` -> `https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/MicrosoftEdge/MicrosoftEdge.list`
 - 失败源：
 - 无
 - 重复源：

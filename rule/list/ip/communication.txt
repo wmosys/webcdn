@@ -1,5 +1,18 @@
-# Build Date: 2026-06-18 03:23:52 +0000
-# Rule Count: 131
+# Build Date: 2026-06-18 14:43:09 +0800
+# Rule Count: 142
+# Source:
+#   - Telegram: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Telegram/Telegram.list
+#   - TelegramNL: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/TelegramNL/TelegramNL.list
+#   - TelegramSG: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/TelegramSG/TelegramSG.list
+#   - TelegramUS: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/TelegramUS/TelegramUS.list
+#   - Discord: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Discord/Discord.list
+#   - Whatsapp: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Whatsapp/Whatsapp.list
+#   - Line: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Line/Line.list
+#   - KakaoTalk: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/KakaoTalk/KakaoTalk.list
+#   - Zalo: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Zalo/Zalo.list
+#   - PotatoChat: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/PotatoChat/PotatoChat.list
+#   - Clubhouse: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Clubhouse/Clubhouse.list
+#   - ClubhouseIP: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/ClubhouseIP/ClubhouseIP.list
 
 IP-CIDR,109.239.140.0/24,no-resolve
 IP-CIDR,139.59.210.98/32,no-resolve
@@ -23,6 +36,17 @@ IP-CIDR,91.108.16.0/22,no-resolve
 IP-CIDR,91.108.56.0/22,no-resolve
 IP-CIDR,91.108.12.0/22,no-resolve
 IP-CIDR6,2001:b28:f23d::/48,no-resolve
+IP-CIDR,158.85.224.160/27,no-resolve
+IP-CIDR,158.85.46.128/27,no-resolve
+IP-CIDR,158.85.5.192/27,no-resolve
+IP-CIDR,173.192.222.160/27,no-resolve
+IP-CIDR,173.192.231.32/27,no-resolve
+IP-CIDR,18.194.0.0/15,no-resolve
+IP-CIDR,184.173.128.0/17,no-resolve
+IP-CIDR,208.43.122.128/27,no-resolve
+IP-CIDR,34.224.0.0/12,no-resolve
+IP-CIDR,50.22.198.204/30,no-resolve
+IP-CIDR,54.242.0.0/15,no-resolve
 IP-CIDR,103.2.28.0/22,no-resolve
 IP-CIDR,119.235.224.0/21,no-resolve
 IP-CIDR,119.235.232.0/23,no-resolve

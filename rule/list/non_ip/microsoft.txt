@@ -1,5 +1,7 @@
-# Build Date: 2026-06-18 03:23:52 +0000
-# Rule Count: 682
+# Build Date: 2026-06-18 14:43:09 +0800
+# Rule Count: 668
+# Source:
+#   - Microsoft: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Microsoft/Microsoft.list
 
 DOMAIN,vsmarketplacebadge.apphb.com
 DOMAIN-SUFFIX,1drv.ms
@@ -669,17 +671,3 @@ DOMAIN-KEYWORD,microsoft
 DOMAIN-KEYWORD,1drv
 DOMAIN-KEYWORD,onedrive
 DOMAIN-KEYWORD,skydrive
-DOMAIN-SUFFIX,oneclient.sfx.ms
-DOMAIN-SUFFIX,onedrive.live.com
-DOMAIN-SUFFIX,photos.live.com
-DOMAIN-SUFFIX,skydrive.wns.windows.com
-DOMAIN-SUFFIX,storage.live.com
-DOMAIN-SUFFIX,storage.msn.com
-DOMAIN,teams.events.data.microsoft.com
-DOMAIN-SUFFIX,teams.cdn.live.net
-DOMAIN-SUFFIX,teams.live.com
-DOMAIN-SUFFIX,teams.microsoft.com
-DOMAIN,edge.activity.windows.com
-DOMAIN,edge.microsoft.com
-DOMAIN,iecvlist.microsoft.com
-DOMAIN,msedge.api.cdp.microsoft.com
