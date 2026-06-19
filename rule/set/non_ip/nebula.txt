@@ -1,1 +1,1 @@
-DOMAIN-SUFFIX,mosy.xyz
+DOMAIN-SUFFIX,mosy.xyz,no-resolve
