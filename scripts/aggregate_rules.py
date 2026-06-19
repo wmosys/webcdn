@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import argparse
 import ast
+import json
+import os
 import sys
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -22,6 +24,8 @@ except ImportError:  # pragma: no cover
 IP_RULE_TYPES = {"IP-CIDR", "IP-CIDR6", "IP-ASN"}
 ALL_RULE_TYPES = {"*"}
 BEIJING_TZ = timezone(timedelta(hours=8))
+SOURCE_STATE_VERSION = 1
+DEFAULT_SOURCE_STATE_PATH = ".cache/rule-source-state/source-state.json"
 
 
 @dataclass(frozen=True)
@@ -61,6 +65,7 @@ class OutputResult:
     include: set[str]
     exclude: set[str]
     rules: list[str] = field(default_factory=list)
+    source_rules: dict[str, list[str]] = field(default_factory=dict)
 
 
 @dataclass
@@ -72,12 +77,37 @@ class GroupResult:
     duplicate_sources: list[SourceRecord] = field(default_factory=list)
 
 
+@dataclass(frozen=True)
+class SourceRuleDiff:
+    source: str
+    added: int
+    removed: int
+
+
+@dataclass
+class OutputRuleDiff:
+    group_name: str
+    output_name: str
+    output_path: Path
+    source_diffs: list[SourceRuleDiff] = field(default_factory=list)
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="聚合 Clash/Mihomo 规则文件。")
     parser.add_argument(
         "--config",
         default="rule/rule-aggregate.yaml",
         help="配置文件路径，默认值：rule/rule-aggregate.yaml",
+    )
+    parser.add_argument(
+        "--state",
+        default=DEFAULT_SOURCE_STATE_PATH,
+        help=f"源规则状态文件路径，默认值：{DEFAULT_SOURCE_STATE_PATH}",
+    )
+    parser.add_argument(
+        "--report",
+        default="",
+        help="存在规则更新时写入 Markdown 推送报告的路径。",
     )
     return parser.parse_args()
 
@@ -429,6 +459,7 @@ def build_group(
         for spec in output_specs
     ]
     output_seen: dict[str, set[str]] = {output.name: set() for output in outputs}
+    output_source_seen: dict[str, dict[str, set[str]]] = {output.name: {} for output in outputs}
     resolved_seen: set[str] = set()
     success_sources: list[SourceRecord] = []
     failed_sources: list[SourceRecord] = []
@@ -488,6 +519,12 @@ def build_group(
             for output in outputs:
                 if not rule_matches_output(rule_type, output):
                     continue
+
+                source_seen = output_source_seen[output.name].setdefault(source, set())
+                if rule not in source_seen:
+                    source_seen.add(rule)
+                    output.source_rules.setdefault(source, []).append(rule)
+
                 seen = output_seen[output.name]
                 if rule in seen:
                     continue
@@ -541,6 +578,211 @@ def read_existing_rules(path: Path) -> list[str] | None:
 def output_rules_changed(root: Path, output: OutputResult) -> bool:
     existing_rules = read_existing_rules(root / output.path)
     return existing_rules != output.rules
+
+
+def resolve_repo_path(root: Path, path: Path) -> Path:
+    return path if path.is_absolute() else root / path
+
+
+def empty_source_state() -> dict[str, Any]:
+    return {"version": SOURCE_STATE_VERSION, "groups": {}}
+
+
+def load_source_state(path: Path) -> tuple[dict[str, Any], bool]:
+    if not path.exists():
+        return empty_source_state(), False
+
+    state = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(state, dict):
+        raise ValueError(f"源规则状态文件格式不正确：{path}")
+    if state.get("version") != SOURCE_STATE_VERSION:
+        return empty_source_state(), False
+    groups = state.get("groups")
+    if not isinstance(groups, dict):
+        return empty_source_state(), False
+    return state, True
+
+
+def build_source_state(results: list[GroupResult]) -> dict[str, Any]:
+    state: dict[str, Any] = {"version": SOURCE_STATE_VERSION, "groups": {}}
+    groups_state: dict[str, Any] = state["groups"]
+
+    for result in results:
+        outputs_state: dict[str, Any] = {}
+        for output in result.outputs:
+            sources_state = {
+                source: sorted(rules)
+                for source, rules in sorted(output.source_rules.items())
+            }
+            outputs_state[output.name] = {
+                "path": output.path.as_posix(),
+                "sources": sources_state,
+            }
+        groups_state[result.name] = {"outputs": outputs_state}
+
+    return state
+
+
+def write_source_state(path: Path, state: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(state, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+
+def get_previous_source_rules(state: dict[str, Any], group_name: str, output_name: str, source: str) -> list[str]:
+    groups = state.get("groups", {})
+    if not isinstance(groups, dict):
+        return []
+    group_state = groups.get(group_name, {})
+    if not isinstance(group_state, dict):
+        return []
+    outputs = group_state.get("outputs", {})
+    if not isinstance(outputs, dict):
+        return []
+    output_state = outputs.get(output_name, {})
+    if not isinstance(output_state, dict):
+        return []
+    sources = output_state.get("sources", {})
+    if not isinstance(sources, dict):
+        return []
+    rules = sources.get(source, [])
+    return rules if isinstance(rules, list) else []
+
+
+def get_previous_source_names(state: dict[str, Any], group_name: str, output_name: str) -> set[str]:
+    groups = state.get("groups", {})
+    if not isinstance(groups, dict):
+        return set()
+    group_state = groups.get(group_name, {})
+    if not isinstance(group_state, dict):
+        return set()
+    outputs = group_state.get("outputs", {})
+    if not isinstance(outputs, dict):
+        return set()
+    output_state = outputs.get(output_name, {})
+    if not isinstance(output_state, dict):
+        return set()
+    sources = output_state.get("sources", {})
+    if not isinstance(sources, dict):
+        return set()
+    return {source for source in sources if isinstance(source, str)}
+
+
+def build_source_diffs(previous_state: dict[str, Any], results: list[GroupResult]) -> list[OutputRuleDiff]:
+    output_diffs: list[OutputRuleDiff] = []
+
+    for result in results:
+        for output in result.outputs:
+            source_diffs: list[SourceRuleDiff] = []
+            source_names = get_previous_source_names(previous_state, result.name, output.name) | set(output.source_rules)
+            for source in sorted(source_names):
+                rules = output.source_rules.get(source, [])
+                previous_rules = set(get_previous_source_rules(previous_state, result.name, output.name, source))
+                current_rules = set(rules)
+                added = len(current_rules - previous_rules)
+                removed = len(previous_rules - current_rules)
+                if added or removed:
+                    source_diffs.append(SourceRuleDiff(source=source, added=added, removed=removed))
+
+            if source_diffs:
+                output_diffs.append(
+                    OutputRuleDiff(
+                        group_name=result.name,
+                        output_name=output.name,
+                        output_path=output.path,
+                        source_diffs=source_diffs,
+                    )
+                )
+
+    return output_diffs
+
+
+def markdown_escape_table_cell(value: str) -> str:
+    return value.replace("|", "\\|")
+
+
+def workflow_value(name: str, default: str = "") -> str:
+    return os.environ.get(name, default)
+
+
+def print_workflow_output(name: str, value: str) -> None:
+    print(f"{name}={value}")
+
+
+def github_actions_run_url() -> str:
+    repository = workflow_value("GITHUB_REPOSITORY")
+    run_id = workflow_value("GITHUB_RUN_ID")
+    if not repository or not run_id:
+        return ""
+    return f"https://github.com/{repository}/actions/runs/{run_id}"
+
+
+def build_update_report(output_diffs: list[OutputRuleDiff]) -> str:
+    repository = workflow_value("GITHUB_REPOSITORY", "local")
+    ref_name = workflow_value("GITHUB_REF_NAME", "local")
+    run_url = github_actions_run_url()
+
+    lines = [
+        "## 规则更新",
+        "",
+        f"仓库：`{repository}`",
+        f"分支：`{ref_name}`",
+    ]
+    if run_url:
+        lines.append(f"运行：[查看 GitHub Actions]({run_url})")
+    lines.append("")
+
+    for output_diff in output_diffs:
+        lines.extend(
+            [
+                f"### {output_diff.group_name} / {output_diff.output_name} (`{output_diff.output_path.as_posix()}`)",
+                "",
+                "| 源规则 | 新增 | 删除 |",
+                "|---|---:|---:|",
+            ]
+        )
+        for source_diff in output_diff.source_diffs:
+            source = markdown_escape_table_cell(source_diff.source)
+            lines.append(f"| `{source}` | {source_diff.added} | {source_diff.removed} |")
+        lines.append("")
+
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def write_update_report(path: Path, output_diffs: list[OutputRuleDiff]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(build_update_report(output_diffs), encoding="utf-8")
+
+
+def build_initialized_report() -> str:
+    repository = workflow_value("GITHUB_REPOSITORY", "local")
+    ref_name = workflow_value("GITHUB_REF_NAME", "local")
+    event_name = workflow_value("GITHUB_EVENT_NAME", "local")
+    run_url = github_actions_run_url()
+
+    lines = [
+        "## 状态初始化",
+        "",
+        f"仓库：`{repository}`",
+        f"分支：`{ref_name}`",
+        f"触发：`{event_name}`",
+    ]
+    if run_url:
+        lines.append(f"运行：[查看 GitHub Actions]({run_url})")
+    lines.extend(
+        [
+            "",
+            "未找到历史源规则基线，已初始化 GitHub Actions cache。下次运行起将推送源规则新增/删除统计。",
+        ]
+    )
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def write_initialized_report(path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(build_initialized_report(), encoding="utf-8")
 
 
 def format_source_line(record: SourceRecord) -> str:
@@ -602,6 +844,8 @@ def main() -> int:
     args = parse_args()
     root = repo_root()
     config_path = (root / args.config).resolve() if not Path(args.config).is_absolute() else Path(args.config)
+    state_path = resolve_repo_path(root, Path(args.state))
+    report_path = Path(args.report) if args.report else None
 
     config = load_config(config_path)
     base_url = str(get_setting(config, "base", "blackmatrix7_raw", default="")).strip()
@@ -633,13 +877,40 @@ def main() -> int:
         )
         results.append(result)
 
+    failed_sources = [
+        record
+        for result in results
+        for record in result.failed_sources
+    ]
+    if failed_sources:
+        for record in failed_sources:
+            print(format_failed_line(record), file=sys.stderr)
+        return 1
+
+    previous_state, has_source_state = load_source_state(state_path)
+    next_state = build_source_state(results)
+    output_diffs = build_source_diffs(previous_state, results) if has_source_state else []
     changed_outputs = [
         output
         for result in results
         for output in result.outputs
         if output_rules_changed(root, output)
     ]
-    if not changed_outputs:
+    state_changed = previous_state != next_state
+    report_kind = "none"
+    if not has_source_state:
+        report_kind = "initialized"
+    elif output_diffs:
+        report_kind = "updates"
+
+    has_rule_updates = bool(output_diffs)
+    has_output_changes = bool(changed_outputs)
+    print_workflow_output("HAS_RULE_UPDATES", "true" if has_rule_updates else "false")
+    print_workflow_output("HAS_OUTPUT_CHANGES", "true" if has_output_changes else "false")
+    print_workflow_output("REPORT_KIND", report_kind)
+    print_workflow_output("STATE_UPDATED", "true" if state_changed else "false")
+
+    if not changed_outputs and not state_changed:
         print("规则无变化，跳过写入。")
         return 0
 
@@ -650,7 +921,13 @@ def main() -> int:
                 continue
             write_rule_file(root / output.path, build_time, output.rules, result.success_sources)
 
-    write_build_log(root / log_path, build_time, results)
+    write_source_state(state_path, next_state)
+    if changed_outputs:
+        write_build_log(root / log_path, build_time, results)
+    if report_kind == "updates" and report_path is not None:
+        write_update_report(report_path, output_diffs)
+    elif report_kind == "initialized" and report_path is not None:
+        write_initialized_report(report_path)
     return 0
 
 

@@ -9,12 +9,13 @@
 - 生成结果目录：`rule/list/non_ip/`、`rule/list/ip/`
 - 生成日志：`rule/list/build-log.md`
 - GitHub Action：`.github/workflows/update-rules.yml`
+- 源规则状态基线：GitHub Actions cache 中的 `rule-source-state/source-state.json`
 - Python 依赖：`requirements.txt` 中有 `PyYAML`，但当前 Action 为了节省时间不安装依赖，脚本需要能在无 `PyYAML` 环境下运行。
 
 ## 常用命令
 
 ```bash
-python3 scripts/aggregate_rules.py --config rule/rule-aggregate.yaml
+python3 scripts/aggregate_rules.py --config rule/rule-aggregate.yaml --state .cache/rule-source-state/source-state.json
 python3 -m py_compile scripts/aggregate_rules.py
 git diff --check
 ```
@@ -31,16 +32,27 @@ git diff --check
 - 不执行 `pip install -r requirements.txt`。
 - 直接用 runner 自带的 `python3` 运行脚本。
 - 给 `contents: write` 权限，用于提交生成结果。
-- 提交前用 `git diff --quiet -- rule` 判断 `rule/` 是否有变化；无变化则跳过 commit。
+- `actions/cache/restore` 会在执行前恢复源规则状态基线。
+- `Generate rules` 步骤会输出 `exit_code`、`has_rule_updates`、`has_output_changes`、`report_kind`、`state_updated`、`state_path`、`report_path`，后续缓存保存、提交和通知都基于这些输出判断。
+- `actions/cache/save` 会在脚本成功且状态变化时保存新的源规则状态基线。
+- 仅当脚本成功且规则输出文件有变更时提交；脚本失败时不提交。
+- 自动提交信息使用 `github-actions: 自动更新聚合规则`，用于在 git 历史中明显区分 Action 自动提交。
+- 仅当脚本失败、首次初始化状态基线，或脚本成功且存在源规则增删时，通过 Server 酱 3 推送通知；成功但无规则更新不推送。
 
 核心步骤是：
 
 ```yaml
 - name: Generate rules
-  run: python3 scripts/aggregate_rules.py --config rule/rule-aggregate.yaml
+  run: |
+    python3 scripts/aggregate_rules.py \
+      --config rule/rule-aggregate.yaml \
+      --state "${RUNNER_TEMP}/rule-source-state/source-state.json" \
+      --report "${RUNNER_TEMP}/rule-update-report.md"
 ```
 
 因此，脚本必须保持“无第三方依赖也能解析当前配置”的能力。
+
+通知使用 Server 酱 3 的完整推送 URL，例如 `https://<uid>.push.ft07.com/send/<sendkey>.send`。该值只应保存到 GitHub `Settings` -> `Secrets and variables` -> `Actions` -> `Repository secrets`，secret 名称为 `SERVER_CHAN_SEND_URL`。如果 secret 未配置，workflow 会跳过通知步骤。推送参数包括 `title`、`desp`、`tags=Github Actions`，其中 `desp` 是 Markdown。
 
 ## 配置文件结构
 
@@ -88,9 +100,12 @@ groups:
 4. 读取 `base.blackmatrix7_raw`、`log.path`、`groups`。
 5. 解析 `filters`。
 6. 遍历每个 group，调用 `build_group()` 聚合规则。
-7. 比较新聚合出的规则与现有输出文件中的真实规则行。
-8. 如果所有输出规则都没有变化，打印 `规则无变化，跳过写入。` 并直接返回。
-9. 如果有变化，只重写发生变化的输出文件，并重写 `build-log.md`。
+7. 若存在源抓取失败，打印失败源并返回非 0。
+8. 读取 `--state` 指定的源规则状态文件，Action 中该文件来自 GitHub Actions cache。
+9. 如果已有状态基线，按 `group -> output -> source` 比较过滤后的源规则集合。
+10. 如果没有状态基线，初始化新的状态文件，并生成“状态初始化”通知报告，但不把全部规则算作新增。
+11. 如果所有输出规则和 source-state 都没有变化，打印 `规则无变化，跳过写入。` 并直接返回。
+12. 如果有变化，只重写发生变化的输出文件，更新状态文件，并在 `--report` 指定时按场景写入 Markdown 报告。
 
 ## YAML 加载策略
 
@@ -181,21 +196,45 @@ IP-CIDR,1.2.3.0/24
 
 这是当前脚本最重要的维护点。
 
-为了避免 Action 每次因为 `Build Date` 或 `build-log.md` 更新时间变化而产生空 commit，脚本不会先写文件再交给 Git 判断，而是先比较真实规则内容：
+为了避免 Action 每次因为 `Build Date` 或 `build-log.md` 更新时间变化而产生空 commit，脚本不会先写文件再交给 Git 判断，而是先比较真实规则内容和源规则状态：
 
 - `read_existing_rules()` 读取已有输出文件。
 - 它会忽略空行和所有 `#` 注释行。
 - `output_rules_changed()` 比较现有真实规则行和新生成的 `OutputResult.rules`。
-- 若所有 output 都无变化，`main()` 直接返回，不写任何文件。
+- `--state` 指定的状态文件保存每个 `group -> output -> source` 的过滤后源规则快照。
+- GitHub Action 中该状态文件保存到 GitHub Actions cache，不进入 Git 仓库。
+- `build_source_diffs()` 基于 source-state 统计每个源规则在每个聚合输出中的新增和删除数量。
+- 若所有 output 和 source-state 都无变化，`main()` 直接返回，不写任何文件。
 
 这一点不要随意改回“每次运行都写输出文件”，否则会导致 GitHub Action 每次定时运行都产生提交。
 
 当前行为：
 
-- 没有规则变化：不写输出文件，不写 `build-log.md`，不提交。
-- 有规则变化：只写发生变化的输出文件，同时写 `build-log.md`。
+- 没有规则变化：不写输出文件，不写状态文件，不写 `build-log.md`，不提交，不推送。
+- 有规则变化：只写发生变化的输出文件，同时更新 cache 状态文件和 `build-log.md`，并生成推送报告。
+- 首次 cache miss：写入 cache 状态文件，生成初始化报告；如果规则输出文件本身没有变化，不提交。
 - 新增 output 文件：视为变化，会写入。
 - 删除配置中的 group/output：脚本不会自动删除旧文件。
+
+## 源规则状态缓存
+
+源规则状态文件用于通知统计，不是仓库产物。它保存每个聚合输出下每个源规则过滤后的规则集合，体积会接近完整规则集，因此不要提交到 Git。
+
+GitHub Action 的处理方式：
+
+- `Restore source state cache` 从 GitHub Actions cache 恢复 `${RUNNER_TEMP}/rule-source-state`。
+- `Generate rules` 通过 `--state "${RUNNER_TEMP}/rule-source-state/source-state.json"` 读取和更新状态。
+- `Save source state cache` 在脚本成功且 `STATE_UPDATED=true` 时保存新的 cache。
+- cache key 使用 `rule-source-state-${{ github.ref_name }}-${{ github.run_id }}`，并通过 `restore-keys` 读取同分支最近一次状态。
+
+脚本输出给 workflow 的关键字段：
+
+- `HAS_RULE_UPDATES=true|false`：已有状态基线下是否存在源规则新增/删除。
+- `HAS_OUTPUT_CHANGES=true|false`：生成的规则输出文件是否需要提交。
+- `REPORT_KIND=updates|initialized|none`：通知报告类型。
+- `STATE_UPDATED=true|false`：状态文件是否需要保存到 cache。
+
+cache miss 时，`REPORT_KIND=initialized`，脚本会初始化状态文件并生成初始化通知，不会把当前所有规则都算作新增。
 
 ## 构建日志
 
@@ -207,7 +246,21 @@ IP-CIDR,1.2.3.0/24
 - 失败源。
 - 重复源。
 
-只有当至少一个 output 的真实规则发生变化时，日志才会被重写。这是为了避免无变化运行产生 commit。
+只有当至少一个 output 的真实规则发生变化时，日志才会被重写。这是为了避免仅更新 cache 状态时产生 commit。
+
+## 推送报告
+
+成功且存在规则更新时，脚本在 `--report` 指定路径写入 Markdown 报告。报告只列出存在更新的聚合输出，每个输出下用表格展示发生变化的源规则：
+
+```md
+### Google / non_ip (`rule/list/non_ip/google.txt`)
+
+| 源规则 | 新增 | 删除 |
+|---|---:|---:|
+| `Google` | 12 | 3 |
+```
+
+失败时，workflow 自己生成失败 Markdown，不依赖脚本报告。通知标题格式固定为 `GitHub Actions : 成功 : 仓库名称` 或 `GitHub Actions : 失败 : 仓库名称`。
 
 ## 常见维护任务
 
@@ -226,7 +279,7 @@ NewGroup:
 然后运行：
 
 ```bash
-python3 scripts/aggregate_rules.py --config rule/rule-aggregate.yaml
+python3 scripts/aggregate_rules.py --config rule/rule-aggregate.yaml --state .cache/rule-source-state/source-state.json
 ```
 
 ### 只输出域名规则
@@ -284,14 +337,14 @@ git diff --check
 
 - `rule/list/build-log.md` 是否有失败源。
 - 生成文件规则数量是否符合预期。
+- `.cache/rule-source-state/source-state.json` 或 workflow cache 中的状态文件是否更新到当前源规则快照。
 - 无规则变化时再次运行是否输出 `规则无变化，跳过写入。`。
 - `git status --short -- rule/list` 是否符合预期。
 
 ## 注意事项
 
-- 不要提交 `scripts/__pycache__/` 这类运行缓存。
+- 不要提交 `scripts/__pycache__/`、`.cache/`、`rule/list/source-state.json` 这类运行缓存或状态文件。
 - Action 中不安装依赖是有意为之，目的是减少定时任务耗时。
 - 如果未来为了完整 YAML 能力恢复 `PyYAML` 安装，需要重新评估 Action 构建时间。
 - 本地 Codex 沙箱网络可能不能访问 GitHub raw 源，DNS 失败不等同于脚本逻辑失败。
-- 失败源会进入 `build-log.md`，但脚本目前不会因为个别源失败而整体退出失败。
-- 若希望任何源失败都让 Action 失败，需要额外调整 `main()` 或 `build_group()` 的错误策略。
+- 任一源抓取失败会让脚本返回非 0，workflow 会推送失败通知并最终失败。

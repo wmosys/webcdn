@@ -22,17 +22,107 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Restore source state cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/rule-source-state
+          key: rule-source-state-${{ github.ref_name }}-${{ github.run_id }}
+          restore-keys: |
+            rule-source-state-${{ github.ref_name }}-
+
       - name: Generate rules
-        run: python3 scripts/aggregate_rules.py --config rule/rule-aggregate.yaml
+        id: generate
+        run: |
+          STATE_PATH="${RUNNER_TEMP}/rule-source-state/source-state.json"
+          REPORT_PATH="${RUNNER_TEMP}/rule-update-report.md"
+          OUTPUT_LOG="${RUNNER_TEMP}/rule-generate-output.log"
+          mkdir -p "$(dirname "$STATE_PATH")"
+          set +e
+          python3 scripts/aggregate_rules.py \
+            --config rule/rule-aggregate.yaml \
+            --state "$STATE_PATH" \
+            --report "$REPORT_PATH" > "$OUTPUT_LOG" 2>&1
+          EXIT_CODE=$?
+          set -e
+          cat "$OUTPUT_LOG"
+
+          HAS_RULE_UPDATES="$(sed -n 's/^HAS_RULE_UPDATES=//p' "$OUTPUT_LOG" | tail -n 1)"
+          HAS_OUTPUT_CHANGES="$(sed -n 's/^HAS_OUTPUT_CHANGES=//p' "$OUTPUT_LOG" | tail -n 1)"
+          REPORT_KIND="$(sed -n 's/^REPORT_KIND=//p' "$OUTPUT_LOG" | tail -n 1)"
+          STATE_UPDATED="$(sed -n 's/^STATE_UPDATED=//p' "$OUTPUT_LOG" | tail -n 1)"
+
+          HAS_RULE_UPDATES="${HAS_RULE_UPDATES:-false}"
+          HAS_OUTPUT_CHANGES="${HAS_OUTPUT_CHANGES:-false}"
+          REPORT_KIND="${REPORT_KIND:-none}"
+          STATE_UPDATED="${STATE_UPDATED:-false}"
+
+          echo "exit_code=$EXIT_CODE" >> "$GITHUB_OUTPUT"
+          echo "has_rule_updates=$HAS_RULE_UPDATES" >> "$GITHUB_OUTPUT"
+          echo "has_output_changes=$HAS_OUTPUT_CHANGES" >> "$GITHUB_OUTPUT"
+          echo "report_kind=$REPORT_KIND" >> "$GITHUB_OUTPUT"
+          echo "state_updated=$STATE_UPDATED" >> "$GITHUB_OUTPUT"
+          echo "state_path=$STATE_PATH" >> "$GITHUB_OUTPUT"
+          echo "report_path=$REPORT_PATH" >> "$GITHUB_OUTPUT"
+          exit 0
 
       - name: Commit changes
+        if: ${{ steps.generate.outputs.exit_code == '0' && steps.generate.outputs.has_output_changes == 'true' }}
         run: |
-          if git diff --quiet -- rule; then
-            echo "No rule changes."
-            exit 0
-          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add rule
-          git commit -m "chore: update aggregated rules"
+          git commit -m "github-actions: 自动更新聚合规则"
           git push origin HEAD:${{ github.ref_name }}
+
+      - name: Save source state cache
+        if: ${{ steps.generate.outputs.exit_code == '0' && steps.generate.outputs.state_updated == 'true' }}
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/rule-source-state
+          key: rule-source-state-${{ github.ref_name }}-${{ github.run_id }}
+
+      - name: Notify ServerChan
+        if: ${{ !cancelled() && (steps.generate.outputs.exit_code != '0' || steps.generate.outputs.report_kind == 'initialized' || steps.generate.outputs.has_rule_updates == 'true') }}
+        env:
+          SERVER_CHAN_SEND_URL: ${{ secrets.SERVER_CHAN_SEND_URL }}
+          GENERATE_EXIT_CODE: ${{ steps.generate.outputs.exit_code }}
+          HAS_RULE_UPDATES: ${{ steps.generate.outputs.has_rule_updates }}
+          REPORT_KIND: ${{ steps.generate.outputs.report_kind }}
+          REPORT_PATH: ${{ steps.generate.outputs.report_path }}
+        run: |
+          if [ -z "$SERVER_CHAN_SEND_URL" ]; then
+            echo "SERVER_CHAN_SEND_URL is not set, skip notification."
+            exit 0
+          fi
+
+          if [ "$GENERATE_EXIT_CODE" = "0" ]; then
+            TITLE="GitHub Actions : 成功 : ${{ github.event.repository.name }}"
+            if [ -f "$REPORT_PATH" ]; then
+              DESP="$(cat "$REPORT_PATH")"
+            else
+              echo "Report file is missing, skip notification."
+              exit 0
+            fi
+          else
+            TITLE="GitHub Actions : 失败 : ${{ github.event.repository.name }}"
+            DESP="$(cat <<'EOF'
+          ## 执行失败
+
+          仓库：`${{ github.repository }}`
+          分支：`${{ github.ref_name }}`
+          触发：`${{ github.event_name }}`
+          运行：[查看 GitHub Actions](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+          请查看 workflow 日志定位失败步骤。
+          EOF
+          )"
+          fi
+
+          curl -fsS -X POST "$SERVER_CHAN_SEND_URL" \
+            --data-urlencode "title=$TITLE" \
+            --data-urlencode "desp=$DESP" \
+            --data-urlencode "tags=Github Actions"
+
+      - name: Fail workflow when generation failed
+        if: ${{ steps.generate.outputs.exit_code != '0' }}
+        run: exit 1
