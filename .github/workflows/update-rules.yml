@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Restore source state cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: ${{ runner.temp }}/rule-source-state
           key: rule-source-state-${{ github.ref_name }}-${{ github.run_id }}
@@ -76,7 +76,7 @@ jobs:
 
       - name: Save source state cache
         if: ${{ steps.generate.outputs.exit_code == '0' && steps.generate.outputs.state_updated == 'true' }}
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: ${{ runner.temp }}/rule-source-state
           key: rule-source-state-${{ github.ref_name }}-${{ github.run_id }}
