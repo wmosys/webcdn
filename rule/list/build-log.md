@@ -1,10 +1,10 @@
 # 规则编译日志
 
-- 编译日期：2026-06-19 04:14:42 +0800
+- 编译日期：2026-06-20 03:29:51 +0800
 
 ## ChinaMax
-- 输出文件：`rule/list/non_ip/ChinaMax.txt`（112767 条）
-- 输出文件：`rule/list/ip/ChinaMax.txt`（12375 条）
+- 输出文件：`rule/list/non_ip/ChinaMax.txt`（112699 条）
+- 输出文件：`rule/list/ip/ChinaMax.txt`（12390 条）
 - 成功源：
 - `ChinaMax` -> `https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/ChinaMax/ChinaMax.list`
 - 失败源：
