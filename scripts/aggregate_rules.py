@@ -505,6 +505,10 @@ def build_group(
 
 def write_rule_file(path: Path, build_time: str, rules: list[str], sources: list[SourceRecord]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(format_rule_file(build_time, rules, sources), encoding="utf-8")
+
+
+def format_rule_file(build_time: str, rules: list[str], sources: list[SourceRecord]) -> str:
     content = [
         f"# Build Date: {build_time}",
         f"# Rule Count: {len(rules)}",
@@ -521,7 +525,22 @@ def write_rule_file(path: Path, build_time: str, rules: list[str], sources: list
             *rules,
         ]
     )
-    path.write_text("\n".join(content).rstrip() + "\n", encoding="utf-8")
+    return "\n".join(content).rstrip() + "\n"
+
+
+def read_existing_rules(path: Path) -> list[str] | None:
+    if not path.exists():
+        return None
+    return [
+        line.strip()
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    ]
+
+
+def output_rules_changed(root: Path, output: OutputResult) -> bool:
+    existing_rules = read_existing_rules(root / output.path)
+    return existing_rules != output.rules
 
 
 def format_source_line(record: SourceRecord) -> str:
@@ -599,7 +618,6 @@ def main() -> int:
     global_include = normalize_rule_types(config.get("include"), "include", ALL_RULE_TYPES, filters)
     source_cache: dict[str, ParsedSource] = {}
     results: list[GroupResult] = []
-    build_time = datetime.now(BEIJING_TZ).strftime("%Y-%m-%d %H:%M:%S %z")
 
     for group_name, group_cfg in groups.items():
         if not isinstance(group_cfg, dict):
@@ -613,9 +631,24 @@ def main() -> int:
             filters=filters,
             source_cache=source_cache,
         )
-        for output in result.outputs:
-            write_rule_file(root / output.path, build_time, output.rules, result.success_sources)
         results.append(result)
+
+    changed_outputs = [
+        output
+        for result in results
+        for output in result.outputs
+        if output_rules_changed(root, output)
+    ]
+    if not changed_outputs:
+        print("规则无变化，跳过写入。")
+        return 0
+
+    build_time = datetime.now(BEIJING_TZ).strftime("%Y-%m-%d %H:%M:%S %z")
+    for result in results:
+        for output in result.outputs:
+            if output not in changed_outputs:
+                continue
+            write_rule_file(root / output.path, build_time, output.rules, result.success_sources)
 
     write_build_log(root / log_path, build_time, results)
     return 0
