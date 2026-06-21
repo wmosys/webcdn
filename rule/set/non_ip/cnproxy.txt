@@ -1,7 +1,6 @@
 #########################################
 # Mainland Domain
 #########################################
-DOMAIN-SUFFIX,wmosys.asia
 DOMAIN-SUFFIX,bmjsub.org
 DOMAIN-SUFFIX,bjnet2.com
 ################## EOF ##################
