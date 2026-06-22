@@ -92,6 +92,21 @@ class OutputRuleDiff:
     source_diffs: list[SourceRuleDiff] = field(default_factory=list)
 
 
+@dataclass(frozen=True)
+class GroupRuleDiffRow:
+    source: str
+    output_name: str
+    output_path: Path
+    added: int
+    removed: int
+
+
+@dataclass
+class GroupRuleDiff:
+    group_name: str
+    rows: list[GroupRuleDiffRow] = field(default_factory=list)
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="聚合 Clash/Mihomo 规则文件。")
     parser.add_argument(
@@ -116,6 +131,26 @@ def repo_root() -> Path:
     return Path(__file__).resolve().parents[1]
 
 
+def strip_inline_comment(text: str) -> str:
+    """剥离行尾注释 `# ...`，忽略引号内的 #，保留值本身。"""
+
+    quote: str | None = None
+    for index, char in enumerate(text):
+        if quote:
+            if char == quote:
+                quote = None
+            continue
+        if char in {"'", '"'}:
+            quote = char
+            continue
+        if char == "#":
+            # 仅当 # 前面是空白或位于行首时才视为注释，避免切到 URL 中的 #fragment。
+            prev = text[index - 1] if index > 0 else " "
+            if prev.isspace() or index == 0:
+                return text[:index].rstrip()
+    return text.rstrip()
+
+
 def load_yaml_subset(path: Path) -> dict[str, Any]:
     if not path.exists():
         raise FileNotFoundError(f"配置文件不存在：{path}")
@@ -127,7 +162,7 @@ def load_yaml_subset(path: Path) -> dict[str, Any]:
         if "\t" in raw:
             raise ValueError(f"配置文件包含 tab 缩进，行号：{lineno}")
         indent = len(raw) - len(raw.lstrip(" "))
-        content = raw[indent:].rstrip()
+        content = strip_inline_comment(raw[indent:])
         lines.append(YamlLine(lineno=lineno, indent=indent, content=content))
 
     if not lines:
@@ -305,10 +340,11 @@ def get_setting(data: dict[str, Any], *keys: str, default: Any = None) -> Any:
     return current
 
 
-def normalize_source(source: str, base_url: str) -> str:
+def normalize_source(source: str, base_url: str, group_name: str = "") -> str:
     source = source.strip()
     if not source:
-        raise ValueError("源配置不能为空。")
+        hint = f"{group_name}.sources" if group_name else "sources"
+        raise ValueError(f"{hint} 存在空字符串源配置，请检查 YAML 缩进或多余空行。")
     if source.startswith(("http://", "https://")):
         return source.rstrip("/")
     return f"{base_url.rstrip('/')}/{source}/{source}.list"
@@ -382,6 +418,56 @@ def normalize_rule_types(
     return normalized
 
 
+def parse_exclude_from(group_name: str, group_cfg: dict[str, Any]) -> list[str]:
+    """解析 group 的 exclude_from 配置，返回需要排除其规则的上游 group 名称列表。"""
+
+    raw = group_cfg.get("exclude_from", [])
+    if raw is None:
+        return []
+    if not isinstance(raw, list):
+        raise ValueError(f"{group_name}.exclude_from 必须是列表。")
+
+    names: list[str] = []
+    for item in raw:
+        if not isinstance(item, str) or not item.strip():
+            raise ValueError(f"{group_name}.exclude_from 仅支持非空字符串。")
+        names.append(item.strip())
+    return names
+
+
+def topological_group_order(group_names: list[str], exclude_from_map: dict[str, list[str]]) -> list[str]:
+    """按 exclude_from 依赖返回拓扑顺序；存在循环引用时报错中止。
+
+    被 exclude_from 引用的 group 会先处理，保证下游能拿到上游已完成规则集。
+    """
+
+    graph: dict[str, list[str]] = {name: list(exclude_from_map.get(name, [])) for name in group_names}
+    for name, deps in graph.items():
+        for dep in deps:
+            if dep not in graph:
+                raise ValueError(f"{name}.exclude_from 引用了不存在的 group：{dep}")
+
+    # 检测环：dep 依赖 name 时说明 name 必须在 dep 之后，若 name 又依赖 dep 则成环。
+    order: list[str] = []
+    visited: dict[str, int] = {name: 0 for name in group_names}  # 0=未访问,1=访问中,2=已完成
+
+    def visit(node: str, stack: list[str]) -> None:
+        if visited[node] == 2:
+            return
+        if visited[node] == 1:
+            cycle = " -> ".join(stack + [node])
+            raise ValueError(f"exclude_from 存在循环引用：{cycle}")
+        visited[node] = 1
+        for dep in graph[node]:
+            visit(dep, stack + [node])
+        visited[node] = 2
+        order.append(node)
+
+    for name in group_names:
+        visit(name, [])
+    return order
+
+
 def parse_filters(config: dict[str, Any]) -> dict[str, set[str]]:
     filters_cfg = config.get("filters", {})
     if filters_cfg is None:
@@ -442,7 +528,10 @@ def build_group(
     global_include: set[str],
     filters: dict[str, set[str]],
     source_cache: dict[str, ParsedSource],
+    exclude_sets: dict[str, set[str]] | None = None,
 ) -> GroupResult:
+    # exclude_sets: 跨组去重用，按 output 名提供上游 group 已完成规则集合。
+    exclude_sets = exclude_sets or {}
     sources = group_cfg.get("sources")
     if not isinstance(sources, list) or not sources:
         raise ValueError(f"{group_name} 的 sources 必须是非空列表。")
@@ -460,6 +549,11 @@ def build_group(
     ]
     output_seen: dict[str, set[str]] = {output.name: set() for output in outputs}
     output_source_seen: dict[str, dict[str, set[str]]] = {output.name: {} for output in outputs}
+    # 按 output 名汇总跨组排除规则；只有同名 output 才参与跨组排除，避免域名被 IP 误伤。
+    output_excluded: dict[str, set[str]] = {
+        output.name: set(exclude_sets.get(output.name, set()))
+        for output in outputs
+    }
     resolved_seen: set[str] = set()
     success_sources: list[SourceRecord] = []
     failed_sources: list[SourceRecord] = []
@@ -469,7 +563,7 @@ def build_group(
         if not isinstance(source, str):
             raise ValueError(f"{group_name} 的 sources 仅支持字符串。")
 
-        resolved_url = normalize_source(source, base_url)
+        resolved_url = normalize_source(source, base_url, group_name)
         if resolved_url in resolved_seen:
             duplicate_sources.append(
                 SourceRecord(
@@ -518,6 +612,10 @@ def build_group(
         for rule_type, rule in parsed_source.rules:
             for output in outputs:
                 if not rule_matches_output(rule_type, output):
+                    continue
+
+                # 跨组去重：命中上游 group 同名 output 已有规则则跳过，不进入 source_rules 和 rules。
+                if rule in output_excluded[output.name]:
                     continue
 
                 source_seen = output_source_seen[output.name].setdefault(source, set())
@@ -719,6 +817,27 @@ def github_actions_run_url() -> str:
     return f"https://github.com/{repository}/actions/runs/{run_id}"
 
 
+def group_output_diffs(output_diffs: list[OutputRuleDiff]) -> list[GroupRuleDiff]:
+    """按 group 聚合 output 级别差异，便于同一张表展示 non_ip / ip 等多种输出。"""
+
+    groups: dict[str, GroupRuleDiff] = {}
+
+    for output_diff in output_diffs:
+        group = groups.setdefault(output_diff.group_name, GroupRuleDiff(group_name=output_diff.group_name))
+        for source_diff in output_diff.source_diffs:
+            group.rows.append(
+                GroupRuleDiffRow(
+                    source=source_diff.source,
+                    output_name=output_diff.output_name,
+                    output_path=output_diff.output_path,
+                    added=source_diff.added,
+                    removed=source_diff.removed,
+                )
+            )
+
+    return list(groups.values())
+
+
 def build_update_report(output_diffs: list[OutputRuleDiff]) -> str:
     repository = workflow_value("GITHUB_REPOSITORY", "local")
     ref_name = workflow_value("GITHUB_REF_NAME", "local")
@@ -734,18 +853,22 @@ def build_update_report(output_diffs: list[OutputRuleDiff]) -> str:
         lines.append(f"运行：[查看 GitHub Actions]({run_url})")
     lines.append("")
 
-    for output_diff in output_diffs:
+    for group_diff in group_output_diffs(output_diffs):
         lines.extend(
             [
-                f"### {output_diff.group_name} / {output_diff.output_name} (`{output_diff.output_path.as_posix()}`)",
+                f"### {group_diff.group_name}",
                 "",
-                "| 源规则 | 新增 | 删除 |",
-                "|---|---:|---:|",
+                "| 源规则 | 类型 | 新增 | 删除 |",
+                "|---|---|---:|---:|",
             ]
         )
-        for source_diff in output_diff.source_diffs:
-            source = markdown_escape_table_cell(source_diff.source)
-            lines.append(f"| `{source}` | {source_diff.added} | {source_diff.removed} |")
+        for row in sorted(group_diff.rows, key=lambda item: (item.source, item.output_name)):
+            source = markdown_escape_table_cell(row.source)
+            output_name = markdown_escape_table_cell(row.output_name)
+            lines.append(
+                f"| `{source}` | {output_name} | {row.added} | {row.removed} |"
+                f" <!-- {row.output_path.as_posix()} -->"
+            )
         lines.append("")
 
     return "\n".join(lines).rstrip() + "\n"
@@ -863,9 +986,27 @@ def main() -> int:
     source_cache: dict[str, ParsedSource] = {}
     results: list[GroupResult] = []
 
+    group_names = list(groups.keys())
+    exclude_from_map: dict[str, list[str]] = {}
     for group_name, group_cfg in groups.items():
         if not isinstance(group_cfg, dict):
             raise ValueError(f"{group_name} 的配置必须是映射。")
+        exclude_from_map[group_name] = parse_exclude_from(group_name, group_cfg)
+
+    # 按 exclude_from 依赖拓扑排序，上游 group 先处理，便于跨组去重。
+    ordered_names = topological_group_order(group_names, exclude_from_map)
+    # 保留已处理 group 每个 output 名的最终规则集合，供下游排除使用。
+    finalized_rules: dict[str, dict[str, set[str]]] = {}
+    result_by_name: dict[str, GroupResult] = {}
+
+    for group_name in ordered_names:
+        group_cfg = groups[group_name]
+        exclude_sets: dict[str, set[str]] = {}
+        for upstream in exclude_from_map[group_name]:
+            # 合并所有上游 group 同名 output 的最终规则，做跨组去重。
+            upstream_outputs = finalized_rules.get(upstream, {})
+            for output_name, rules in upstream_outputs.items():
+                exclude_sets.setdefault(output_name, set()).update(rules)
 
         result = build_group(
             group_name=group_name,
@@ -874,8 +1015,15 @@ def main() -> int:
             global_include=global_include,
             filters=filters,
             source_cache=source_cache,
+            exclude_sets=exclude_sets,
         )
-        results.append(result)
+        result_by_name[group_name] = result
+        finalized_rules[group_name] = {
+            output.name: set(output.rules) for output in result.outputs
+        }
+
+    # 按配置原始顺序输出结果，避免拓扑排序改变产物顺序。
+    results = [result_by_name[name] for name in group_names]
 
     failed_sources = [
         record

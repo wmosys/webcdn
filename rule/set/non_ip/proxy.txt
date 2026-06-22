@@ -1,9 +1,19 @@
 #########################################
 # Globla Domain
 #########################################
+DOMAIN-SUFFIX,postman.com
+DOMAIN-SUFFIX,mojie.live
+DOMAIN-SUFFIX,linux.do
+DOMAIN-SUFFIX,doghubx.top
+DOMAIN-SUFFIX,notion.so
+DOMAIN-SUFFIX,notion.com
+DOMAIN-SUFFIX,1password.com
+DOMAIN-SUFFIX,dbeaver.io
+DOMAIN-SUFFIX,element-plus.org
+DOMAIN-SUFFIX,xn--a-2h9a4s792d.xyz
+DOMAIN-SUFFIX,哆啦a梦.xyz
 DOMAIN-SUFFIX,mikanani.me
 DOMAIN-SUFFIX,wiki.metacubex.one
-DOMAIN-SUFFIX,element-plus.org
 DOMAIN-SUFFIX,cults3d.com
 DOMAIN-SUFFIX,macwk.cn
 DOMAIN-SUFFIX,whiskybase.com
@@ -13,4 +23,5 @@ DOMAIN-SUFFIX,smokingpipes.com
 DOMAIN-SUFFIX,pipeuncle.com
 DOMAIN-SUFFIX,70cigars.com
 DOMAIN-SUFFIX,tecon-gmbh.de
+DOMAIN-SUFFIX,nodeseek.com
 ################## EOF ##################

@@ -3,5 +3,5 @@
 #########################################
 DOMAIN-SUFFIX,api.doghubx.top
 DOMAIN-SUFFIX,ai.doghubx.top
-# DOMAIN-SUFFIX,anyrouter.top
+DOMAIN-SUFFIX,anyrouter.top
 ################## EOF ##################

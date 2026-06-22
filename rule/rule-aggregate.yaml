@@ -9,42 +9,91 @@ filters:
   ip: [IP-CIDR, IP-CIDR6, IP-SUFFIX, IP-ASN]
 
 groups:
-  ChinaMax:
+  #ChinaMax:
+  #  outputs:
+  #    non_ip: {path: "rule/list/non_ip/ChinaMax.txt", include: ["$domain"]}
+  #    ip: {path: "rule/list/ip/ChinaMax.txt", include: ["$ip"]}
+  #  sources: [ChinaMax]
+
+  # 直连指不应该被去广告分流规则屏蔽的域名、IP等，请将此分流规则置于去广告规则之前。
+  Direct:
     outputs:
-      non_ip: {path: "rule/list/non_ip/ChinaMax.txt", include: ["$domain"]}
-      ip: {path: "rule/list/ip/ChinaMax.txt", include: ["$ip"]}
-    sources: [ChinaMax]
+      non_ip: {path: "rule/list/non_ip/Direct.txt", include: ["$domain"]}
+      ip: {path: "rule/list/ip/Direct.txt", include: ["$ip"]}
+    sources: 
+      - Direct
+      - "https://raw.githubusercontent.com/wmosys/webcdn/refs/heads/main/rule/set/non_ip/direct.txt"
+
+  AI:
+    outputs:
+      non_ip: {path: "rule/list/non_ip/AI.txt", include: ["$domain"]}
+      ip: {path: "rule/list/ip/AI.txt", include: ["$ip"]}
+    sources: 
+      - "https://ruleset.skk.moe/Clash/non_ip/ai.txt"
+
+  # 国内可直连的常见静态 CDN
+  CDN:
+    outputs:
+      non_ip: {path: "rule/list/non_ip/CDN.txt", include: ["$domain"]}
+      ip: {path: "rule/list/ip/CDN.txt", include: ["$ip"]}
+    sources: 
+      - "https://ruleset.skk.moe/Clash/domainset/cdn.txt"
+      - "https://ruleset.skk.moe/Clash/non_ip/cdn.txt"
+      - "https://ruleset.skk.moe/Clash/non_ip/microsoft_cdn.txt"
+      - "https://ruleset.skk.moe/Clash/domainset/apple_cdn.txt"
 
   Google:
     outputs:
-      non_ip: {path: "rule/list/non_ip/google.txt", include: ["$domain"]}
-      ip: {path: "rule/list/ip/google.txt", include: ["$ip"]}
+      non_ip: {path: "rule/list/non_ip/Google.txt", include: ["$domain"]}
+      ip: {path: "rule/list/ip/Google.txt", include: ["$ip"]}
     sources: [Google, Chromecast, GoogleFCM]
+    exclude_from: [AI, CDN]
 
   # 微软    
   Microsoft:
     outputs:
-      non_ip: {path: "rule/list/non_ip/microsoft.txt", include: ["$domain"]}
-      # ip: {path: "rule/list/ip/microsoft.txt", include: ["$ip"]}
+      non_ip: {path: "rule/list/non_ip/Microsoft.txt", include: ["$domain"]}
+      # ip: {path: "rule/list/ip/Microsoft.txt", include: ["$ip"]}
     sources: [Microsoft]
+    exclude_from: [AI, CDN]
 
   # 开发平台
   Develop:
     outputs:
-      non_ip: {path: "rule/list/non_ip/develop.txt", include: ["$domain"]}
-      ip: {path: "rule/list/ip/develop.txt", include: ["$ip"]}
+      non_ip: {path: "rule/list/non_ip/Develop.txt", include: ["$domain"]}
+      ip: {path: "rule/list/ip/Develop.txt", include: ["$ip"]}
     sources: [Developer, AppleDev, GitHub, GitLab, GitBook, Atlassian, Docker, Jetbrains, HashiCorp, Npmjs, Python, Android, Ubuntu, Mozilla, Vercel, DigitalOcean, Heroku, Figma]
+    exclude_from: [AI, CDN]
 
   # 即时通讯
   Communication:
     outputs:
-      non_ip: {path: "rule/list/non_ip/communication.txt", include: ["$domain"]}
-      ip: {path: "rule/list/ip/communication.txt", include: ["$ip"]}
+      non_ip: {path: "rule/list/non_ip/Communication.txt", include: ["$domain"]}
+      ip: {path: "rule/list/ip/Communication.txt", include: ["$ip"]}
     sources: [Telegram, TelegramNL, TelegramSG, TelegramUS, Discord, Whatsapp, Line, KakaoTalk, Zalo, PotatoChat, Clubhouse, ClubhouseIP]
   
   # 社交媒体
   Social:
     outputs:
-      non_ip: {path: "rule/list/non_ip/social.txt", include: ["$domain"]}
-      ip: {path: "rule/list/ip/social.txt", include: ["$ip"]}
+      non_ip: {path: "rule/list/non_ip/Social.txt", include: ["$domain"]}
+      ip: {path: "rule/list/ip/Social.txt", include: ["$ip"]}
     sources: [Facebook, Instagram, Threads, Twitter, LinkedIn, Reddit, Tumblr, VK, TruthSocial, 4chan, Blued]
+
+  # GFW 代理规则
+  GlobalProxy:
+    outputs:
+      non_ip: {path: "rule/list/non_ip/GlobalProxy.txt", include: ["$domain"]}
+      ip: {path: "rule/list/ip/GlobalProxy.txt", include: ["$ip"]}
+    sources: 
+      - Proxy
+      - "https://ruleset.skk.moe/Clash/non_ip/global.txt"
+    exclude_from: [AI, CDN, Google, Microsoft, Develop, Communication, Social, Download]   # 排除其他组中已有的同名 output 规则
+
+  # 软件更新、操作系统等大文件下载
+  Download:
+    outputs:
+      non_ip: {path: "rule/list/non_ip/Download.txt", include: ["$domain"]}
+      ip: {path: "rule/list/ip/Download.txt", include: ["$ip"]}
+    sources: 
+      - "https://ruleset.skk.moe/Clash/domainset/download.txt"
+      - "https://ruleset.skk.moe/Clash/non_ip/download.txt"
