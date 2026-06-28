@@ -1,0 +1,14 @@
+# Build Date: 2026-06-28 15:08:11 +0800
+# Rule Count: 8
+# Source:
+#   - https://ruleset.skk.moe/Clash/domainset/download.txt: https://ruleset.skk.moe/Clash/domainset/download.txt
+#   - https://ruleset.skk.moe/Clash/non_ip/download.txt: https://ruleset.skk.moe/Clash/non_ip/download.txt
+
+DOMAIN,7h1s_rul35et_i5_mad3_by_5ukk4w-ruleset.skk.moe
+DOMAIN-WILDCARD,download*.mediafire.com
+DOMAIN-WILDCARD,ftp.??.debian.org
+DOMAIN-WILDCARD,ftp.??.freebsd.org
+DOMAIN-WILDCARD,*.s3.*.backblazeb2.com
+DOMAIN-WILDCARD,cdn-*.comaps.app
+DOMAIN-WILDCARD,cdn-*.comaps.tech
+DOMAIN-WILDCARD,cdn-*.organicmaps.app

@@ -1,0 +1,4 @@
+# Build Date: 2026-06-28 15:08:11 +0800
+# Rule Count: 0
+# Source:
+#   - https://ruleset.skk.moe/Clash/non_ip/ai.txt: https://ruleset.skk.moe/Clash/non_ip/ai.txt

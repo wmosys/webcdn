@@ -1,0 +1,104 @@
+# Build Date: 2026-06-28 15:08:11 +0800
+# Rule Count: 88
+# Source:
+#   - Telegram: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Telegram/Telegram.list
+#   - TelegramNL: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/TelegramNL/TelegramNL.list
+#   - TelegramSG: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/TelegramSG/TelegramSG.list
+#   - TelegramUS: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/TelegramUS/TelegramUS.list
+#   - Discord: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Discord/Discord.list
+#   - Whatsapp: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Whatsapp/Whatsapp.list
+#   - Line: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Line/Line.list
+#   - KakaoTalk: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/KakaoTalk/KakaoTalk.list
+#   - Zalo: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Zalo/Zalo.list
+#   - PotatoChat: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/PotatoChat/PotatoChat.list
+#   - Clubhouse: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Clubhouse/Clubhouse.list
+#   - ClubhouseIP: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/ClubhouseIP/ClubhouseIP.list
+
+DOMAIN,api.imem.app
+DOMAIN,api.swiftgram.app
+DOMAIN-SUFFIX,cdn-telegram.org
+DOMAIN-SUFFIX,comments.app
+DOMAIN-SUFFIX,contest.com
+DOMAIN-SUFFIX,graph.org
+DOMAIN-SUFFIX,legra.ph
+DOMAIN-SUFFIX,mbrx.app
+DOMAIN-SUFFIX,quiz.directory
+DOMAIN-SUFFIX,stel.com
+DOMAIN-SUFFIX,t.me
+DOMAIN-SUFFIX,tdesktop.com
+DOMAIN-SUFFIX,telega.one
+DOMAIN-SUFFIX,telegra.ph
+DOMAIN-SUFFIX,telegram-cdn.org
+DOMAIN-SUFFIX,telegram.dog
+DOMAIN-SUFFIX,telegram.me
+DOMAIN-SUFFIX,telegram.org
+DOMAIN-SUFFIX,telegram.space
+DOMAIN-SUFFIX,telegramdownload.com
+DOMAIN-SUFFIX,telesco.pe
+DOMAIN-SUFFIX,tg.dev
+DOMAIN-SUFFIX,tx.me
+DOMAIN-SUFFIX,usercontent.dev
+DOMAIN-KEYWORD,nicegram
+DOMAIN-SUFFIX,airhorn.solutions
+DOMAIN-SUFFIX,airhornbot.com
+DOMAIN-SUFFIX,bigbeans.solutions
+DOMAIN-SUFFIX,dis.gd
+DOMAIN-SUFFIX,discord-activities.com
+DOMAIN-SUFFIX,discord-attachments-uploads-prd.storage.googleapis.com
+DOMAIN-SUFFIX,discord.co
+DOMAIN-SUFFIX,discord.com
+DOMAIN-SUFFIX,discord.design
+DOMAIN-SUFFIX,discord.dev
+DOMAIN-SUFFIX,discord.gg
+DOMAIN-SUFFIX,discord.gift
+DOMAIN-SUFFIX,discord.gifts
+DOMAIN-SUFFIX,discord.media
+DOMAIN-SUFFIX,discord.new
+DOMAIN-SUFFIX,discord.store
+DOMAIN-SUFFIX,discord.tools
+DOMAIN-SUFFIX,discordactivities.com
+DOMAIN-SUFFIX,discordapp.com
+DOMAIN-SUFFIX,discordapp.io
+DOMAIN-SUFFIX,discordapp.net
+DOMAIN-SUFFIX,discordapp.page.link
+DOMAIN-SUFFIX,discordcdn.com
+DOMAIN-SUFFIX,discordmerch.com
+DOMAIN-SUFFIX,discordpartygames.com
+DOMAIN-SUFFIX,discordsays.com
+DOMAIN-SUFFIX,discordstatus.com
+DOMAIN-SUFFIX,hammerandchisel.ssl.zendesk.com
+DOMAIN-SUFFIX,watchanimeattheoffice.com
+DOMAIN,graph.facebook.com
+DOMAIN-SUFFIX,bintray.com
+DOMAIN-SUFFIX,whatsapp.biz
+DOMAIN-SUFFIX,whatsapp.com
+DOMAIN-SUFFIX,whatsapp.net
+DOMAIN-KEYWORD,whatsapp
+DOMAIN-SUFFIX,lin.ee
+DOMAIN-SUFFIX,line-apps.com
+DOMAIN-SUFFIX,line-cdn.net
+DOMAIN-SUFFIX,line-scdn.net
+DOMAIN-SUFFIX,line.me
+DOMAIN-SUFFIX,linecorp.com
+DOMAIN-SUFFIX,naver.jp
+DOMAIN-SUFFIX,nhncorp.jp
+DOMAIN-SUFFIX,daum.net
+DOMAIN-SUFFIX,daumcdn.net
+DOMAIN-SUFFIX,daumkakao.io
+DOMAIN-SUFFIX,daumpotplayer.com
+DOMAIN-SUFFIX,kakao.co.kr
+DOMAIN-SUFFIX,kakao.com
+DOMAIN-SUFFIX,kakaocdn.net
+DOMAIN-SUFFIX,kakaocorp.com
+DOMAIN-SUFFIX,potplayer.tv
+DOMAIN-SUFFIX,zalo.me
+DOMAIN-SUFFIX,zaloapp.com
+DOMAIN,clubhouse.pubnub.com
+DOMAIN,clubhouseprod.s3.amazonaws.com
+DOMAIN-SUFFIX,clubhouse.com
+DOMAIN-SUFFIX,clubhouseapi.com
+DOMAIN-SUFFIX,joinclubhouse.com
+DOMAIN,ap-oversea-tls.agora.io
+DOMAIN,ap-oversea.agora.io
+DOMAIN,ap-oversea2.agora.io
+DOMAIN,report-oversea.agora.io
