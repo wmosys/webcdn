@@ -1,5 +1,5 @@
-# Build Date: 2026-06-19 04:14:42 +0800
-# Rule Count: 706
+# Build Date: 2026-06-28 15:17:38 +0800
+# Rule Count: 705
 # Source:
 #   - Google: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Google/Google.list
 #   - Chromecast: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Chromecast/Chromecast.list
@@ -191,7 +191,6 @@ DOMAIN-SUFFIX,data-vocabulary.org
 DOMAIN-SUFFIX,dataliberation.org
 DOMAIN-SUFFIX,debug.com
 DOMAIN-SUFFIX,debugproject.com
-DOMAIN-SUFFIX,deepmind.com
 DOMAIN-SUFFIX,deja.com
 DOMAIN-SUFFIX,deps.dev
 DOMAIN-SUFFIX,deps.info
