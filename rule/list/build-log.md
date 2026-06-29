@@ -1,6 +1,6 @@
 # 规则编译日志
 
-- 编译日期：2026-06-28 15:17:38 +0800
+- 编译日期：2026-06-30 03:47:43 +0800
 
 ## Direct
 - 输出文件：`rule/list/non_ip/Direct.txt`（231 条）
@@ -126,7 +126,7 @@
 - 无
 
 ## GlobalProxy
-- 输出文件：`rule/list/non_ip/GlobalProxy.txt`（7183 条）
+- 输出文件：`rule/list/non_ip/GlobalProxy.txt`（7200 条）
 - 输出文件：`rule/list/ip/GlobalProxy.txt`（55 条）
 - 成功源：
 - `Proxy` -> `https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Proxy/Proxy.list`
