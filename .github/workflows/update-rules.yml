@@ -98,14 +98,15 @@ jobs:
           if [ "$GENERATE_EXIT_CODE" = "0" ]; then
             TITLE="GitHub Actions : 成功 : ${{ github.event.repository.name }}"
             if [ -f "$REPORT_PATH" ]; then
-              DESP="$(cat "$REPORT_PATH")"
+              REPORT_FILE="$REPORT_PATH"
             else
               echo "Report file is missing, skip notification."
               exit 0
             fi
           else
             TITLE="GitHub Actions : 失败 : ${{ github.event.repository.name }}"
-            DESP="$(cat <<'EOF'
+            FAIL_REPORT="${RUNNER_TEMP}/fail-report.md"
+            cat > "$FAIL_REPORT" <<'EOF'
           ## 执行失败
 
           仓库：`${{ github.repository }}`
@@ -115,13 +116,11 @@ jobs:
 
           请查看 workflow 日志定位失败步骤。
           EOF
-          )"
+            REPORT_FILE="$FAIL_REPORT"
           fi
 
-          curl -fsS -X POST "$SERVER_CHAN_SEND_URL" \
-            --data-urlencode "title=$TITLE" \
-            --data-urlencode "desp=$DESP" \
-            --data-urlencode "tags=Github Actions"
+          # 用 JSON body 提交，避免表单 urlencode 对 desp 长度的限制导致消息被截断。
+          python3 scripts/notify_serverchan.py "$SERVER_CHAN_SEND_URL" "$TITLE" "$REPORT_FILE"
 
       - name: Fail workflow when generation failed
         if: ${{ steps.generate.outputs.exit_code != '0' }}

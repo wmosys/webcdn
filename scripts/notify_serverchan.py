@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+"""向 Server 酱 3 推送 Markdown 消息。
+
+使用方式：
+    python3 scripts/notify_serverchan.py <url> <title> <report_file>
+
+用 JSON body 提交，避免表单 urlencode 对 desp 长度的限制导致消息被截断。
+"""
+
+from __future__ import annotations
+
+import json
+import sys
+import urllib.request
+
+
+def main() -> int:
+    if len(sys.argv) != 4:
+        print("用法: notify_serverchan.py <url> <title> <report_file>", file=sys.stderr)
+        return 2
+
+    url, title, report_file = sys.argv[1:4]
+
+    with open(report_file, encoding="utf-8") as fh:
+        desp = fh.read()
+
+    payload = json.dumps(
+        {"title": title, "desp": desp, "tags": "Github Actions"},
+        ensure_ascii=False,
+    ).encode("utf-8")
+
+    req = urllib.request.Request(
+        url,
+        data=payload,
+        headers={"Content-Type": "application/json", "User-Agent": "Mozilla/5.0"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            body = resp.read().decode("utf-8", errors="replace")[:200]
+            print(f"{resp.status} {body}")
+            return 0
+    except Exception as exc:  # noqa: BLE001
+        print(f"通知发送失败：{exc}", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
