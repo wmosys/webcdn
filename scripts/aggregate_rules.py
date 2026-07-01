@@ -26,6 +26,10 @@ ALL_RULE_TYPES = {"*"}
 BEIJING_TZ = timezone(timedelta(hours=8))
 SOURCE_STATE_VERSION = 1
 DEFAULT_SOURCE_STATE_PATH = ".cache/rule-source-state/source-state.json"
+CLASSICAL = "classical"
+DOMAIN = "domain"
+IPCIDR = "ipcidr"
+VALID_BEHAVIORS = {CLASSICAL, DOMAIN, IPCIDR}
 
 
 @dataclass(frozen=True)
@@ -38,6 +42,7 @@ class YamlLine:
 @dataclass
 class ParsedSource:
     resolved_url: str
+    behavior: str = CLASSICAL
     rules: list[tuple[str, str]] = field(default_factory=list)
 
 
@@ -54,6 +59,7 @@ class SourceRecord:
 class OutputSpec:
     name: str
     path: Path
+    behavior: str
     include: set[str]
     exclude: set[str]
 
@@ -62,6 +68,7 @@ class OutputSpec:
 class OutputResult:
     name: str
     path: Path
+    behavior: str
     include: set[str]
     exclude: set[str]
     rules: list[str] = field(default_factory=list)
@@ -363,6 +370,92 @@ def fetch_url_text(url: str, timeout: int = 30) -> str:
     return raw.decode("utf-8-sig", errors="replace")
 
 
+def normalize_behavior(value: Any, field_name: str) -> str:
+    """校验并归一化 behavior/type 值，返回小写形式。"""
+
+    if value is None:
+        return CLASSICAL
+    if not isinstance(value, str):
+        raise ValueError(f"{field_name} 必须是字符串。")
+    behavior = value.strip().lower()
+    if behavior not in VALID_BEHAVIORS:
+        raise ValueError(f"{field_name} 不支持：{value}（可选：{', '.join(sorted(VALID_BEHAVIORS))}）")
+    return behavior
+
+
+def parse_cidr_line(value: str) -> tuple[str, str] | None:
+    """把裸 CIDR 值补成规范 (rule_type, canonical)，按是否含冒号判定 v4/v6。
+
+    容错处理 '1.2.3.0/24,no-resolve' 这类带附加选项的行：只取首个 CIDR 段。
+    """
+
+    cidr = value.split(",", 1)[0].strip()
+    if not cidr or " " in cidr:
+        return None
+    rule_type = "IP-CIDR6" if ":" in cidr else "IP-CIDR"
+    return rule_type, f"{rule_type},{cidr}"
+
+
+def parse_domain_line(value: str) -> tuple[str, str] | None:
+    """把裸域名补成 DOMAIN-SUFFIX 规范形式；支持 '+.example.com' 写法。"""
+
+    domain = value.strip()
+    if not domain or " " in domain or "," in domain:
+        return None
+    # mihomo domain 文件里 '+.example.com' 是显式后缀写法，语义与纯域名行一致（均为后缀匹配）。
+    if domain.startswith("+."):
+        domain = domain[2:].strip()
+    if not domain:
+        return None
+    return "DOMAIN-SUFFIX", f"DOMAIN-SUFFIX,{domain}"
+
+
+def rule_value(rule: str) -> str:
+    """提取规则行去掉类型前缀后的「值」部分，用于跨 behavior 归一化比较。
+
+    例：'IP-CIDR,1.2.3.0/24' -> '1.2.3.0/24'；'DOMAIN-SUFFIX,google.com' -> 'google.com'。
+    规范化规则内部统一为 'TYPE,value[,...]'，取首个逗号之后的内容。
+    """
+
+    parts = rule.split(",", 1)
+    return parts[1] if len(parts) == 2 else rule
+
+
+def emit_rule_for_behavior(rule: str, behavior: str) -> str:
+    """按 output 的 behavior 把内部规范规则转成文件行。
+
+    classical：原样输出 'TYPE,value,...'。
+    ipcidr/domain：剥离类型前缀，只写值（附加选项如 no-resolve 在非 classical 下丢弃）。
+    """
+
+    if behavior == CLASSICAL:
+        return rule
+    return rule_value(rule)
+
+
+def restore_rule_from_line(line: str, behavior: str) -> str | None:
+    """把已写入文件的行按 output behavior 还原成内部规范规则，供 diff 比较。
+
+    classical：原样（行本身即 'TYPE,value,...'）。
+    ipcidr：裸 CIDR -> 'IP-CIDR[CIDR6],value'。
+    domain：裸域名 -> 'DOMAIN-SUFFIX,value'。
+    无法还原的行返回 None。
+    """
+
+    value = line.strip()
+    if not value:
+        return None
+    if behavior == CLASSICAL:
+        return value
+    if behavior == IPCIDR:
+        parsed = parse_cidr_line(value)
+        return parsed[1] if parsed else None
+    if behavior == DOMAIN:
+        parsed = parse_domain_line(value)
+        return parsed[1] if parsed else None
+    return value
+
+
 def parse_rule_line(raw_line: str) -> tuple[str, str] | None:
     line = raw_line.strip()
     if not line or line.startswith("#"):
@@ -380,15 +473,25 @@ def parse_rule_line(raw_line: str) -> tuple[str, str] | None:
     return rule_type, canonical
 
 
-def parse_source_text(text: str, resolved_url: str) -> ParsedSource:
+def parse_source_text(text: str, resolved_url: str, behavior: str = CLASSICAL) -> ParsedSource:
     parsed_rules: list[tuple[str, str]] = []
     for raw_line in text.splitlines():
-        parsed = parse_rule_line(raw_line)
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+
+        if behavior == IPCIDR:
+            parsed = parse_cidr_line(line)
+        elif behavior == DOMAIN:
+            parsed = parse_domain_line(line)
+        else:
+            parsed = parse_rule_line(raw_line)
+
         if parsed is None:
             continue
         rule_type, canonical = parsed
         parsed_rules.append((rule_type, canonical))
-    return ParsedSource(resolved_url=resolved_url, rules=parsed_rules)
+    return ParsedSource(resolved_url=resolved_url, behavior=behavior, rules=parsed_rules)
 
 
 def normalize_rule_types(
@@ -504,14 +607,83 @@ def parse_outputs(
         if not output_path:
             raise ValueError(f"{group_name}.outputs.{output_name}.path 不能为空。")
 
+        behavior = normalize_behavior(output_cfg.get("type"), f"{group_name}.outputs.{output_name}.type")
         specs.append(
             OutputSpec(
                 name=output_name,
                 path=Path(str(output_path)),
+                behavior=behavior,
                 include=normalize_rule_types(output_cfg.get("include"), f"{group_name}.{output_name}.include", group_include, filters),
                 exclude=normalize_rule_types(output_cfg.get("exclude"), f"{group_name}.{output_name}.exclude", set(), filters),
             )
         )
+    return specs
+
+
+@dataclass(frozen=True)
+class SourceSpec:
+    name: str            # 展示名（source 标识，用于日志/状态/去重记录）
+    resolved_url: str    # 实际抓取 URL
+    behavior: str        # classical / domain / ipcidr
+
+
+def parse_sources(group_name: str, group_cfg: dict[str, Any], base_url: str) -> list[SourceSpec]:
+    """解析 sources，支持简写与对象两种写法：
+
+    - 简写：Google -> 展开为 {base}/Google/Google.list，behavior 默认 classical。
+    - 对象：{name: Google, behavior: ipcidr} 或 {url: "https://...", behavior: domain}。
+    """
+
+    raw = group_cfg.get("sources")
+    if not isinstance(raw, list) or not raw:
+        raise ValueError(f"{group_name} 的 sources 必须是非空列表。")
+
+    specs: list[SourceSpec] = []
+    for item in raw:
+        if isinstance(item, str):
+            source_name = item.strip()
+            if not source_name:
+                hint = f"{group_name}.sources"
+                raise ValueError(f"{hint} 存在空字符串源配置，请检查 YAML 缩进或多余空行。")
+            specs.append(
+                SourceSpec(
+                    name=source_name,
+                    resolved_url=normalize_source(source_name, base_url, group_name),
+                    behavior=CLASSICAL,
+                )
+            )
+            continue
+
+        if not isinstance(item, dict):
+            raise ValueError(f"{group_name}.sources 仅支持字符串或映射。")
+
+        url_value = item.get("url")
+        name_value = item.get("name")
+        behavior = normalize_behavior(item.get("behavior"), f"{group_name}.sources[].behavior")
+
+        if url_value:
+            if not isinstance(url_value, str) or not url_value.strip():
+                raise ValueError(f"{group_name}.sources[].url 必须是非空字符串。")
+            url_value = url_value.strip()
+            display = name_value.strip() if isinstance(name_value, str) and name_value.strip() else url_value
+            specs.append(SourceSpec(name=display, resolved_url=url_value, behavior=behavior))
+            continue
+
+        if name_value:
+            if not isinstance(name_value, str) or not name_value.strip():
+                raise ValueError(f"{group_name}.sources[].name 必须是非空字符串。")
+            name_value = name_value.strip()
+            specs.append(
+                SourceSpec(
+                    name=name_value,
+                    resolved_url=normalize_source(name_value, base_url, group_name),
+                    behavior=behavior,
+                )
+            )
+            continue
+
+        raise ValueError(f"{group_name}.sources[] 必须提供 name 或 url。")
+
     return specs
 
 
@@ -527,14 +699,12 @@ def build_group(
     base_url: str,
     global_include: set[str],
     filters: dict[str, set[str]],
-    source_cache: dict[str, ParsedSource],
+    source_cache: dict[tuple[str, str], ParsedSource],
     exclude_sets: dict[str, set[str]] | None = None,
 ) -> GroupResult:
-    # exclude_sets: 跨组去重用，按 output 名提供上游 group 已完成规则集合。
+    # exclude_sets: 跨组去重用，按 output 名提供上游 group 已完成「规范值」集合。
     exclude_sets = exclude_sets or {}
-    sources = group_cfg.get("sources")
-    if not isinstance(sources, list) or not sources:
-        raise ValueError(f"{group_name} 的 sources 必须是非空列表。")
+    source_specs = parse_sources(group_name, group_cfg, base_url)
 
     group_include = normalize_rule_types(group_cfg.get("include"), f"{group_name}.include", global_include, filters)
     output_specs = parse_outputs(group_name, group_cfg, group_include, filters)
@@ -542,6 +712,7 @@ def build_group(
         OutputResult(
             name=spec.name,
             path=spec.path,
+            behavior=spec.behavior,
             include=spec.include,
             exclude=spec.exclude,
         )
@@ -549,8 +720,8 @@ def build_group(
     ]
     output_seen: dict[str, set[str]] = {output.name: set() for output in outputs}
     output_source_seen: dict[str, dict[str, set[str]]] = {output.name: {} for output in outputs}
-    # 按 output 名汇总跨组排除规则；只有同名 output 才参与跨组排除，避免域名被 IP 误伤。
-    output_excluded: dict[str, set[str]] = {
+    # 按 output 名汇总跨组排除「规范值」；只有同名 output 才参与跨组排除。
+    output_excluded_values: dict[str, set[str]] = {
         output.name: set(exclude_sets.get(output.name, set()))
         for output in outputs
     }
@@ -559,15 +730,12 @@ def build_group(
     failed_sources: list[SourceRecord] = []
     duplicate_sources: list[SourceRecord] = []
 
-    for source in sources:
-        if not isinstance(source, str):
-            raise ValueError(f"{group_name} 的 sources 仅支持字符串。")
-
-        resolved_url = normalize_source(source, base_url, group_name)
+    for spec in source_specs:
+        resolved_url = spec.resolved_url
         if resolved_url in resolved_seen:
             duplicate_sources.append(
                 SourceRecord(
-                    source=source,
+                    source=spec.name,
                     resolved_url=resolved_url,
                     status="duplicate",
                 )
@@ -575,12 +743,13 @@ def build_group(
             continue
 
         resolved_seen.add(resolved_url)
+        cache_key = (resolved_url, spec.behavior)
 
-        if resolved_url in source_cache:
-            parsed_source = source_cache[resolved_url]
+        if cache_key in source_cache:
+            parsed_source = source_cache[cache_key]
             success_sources.append(
                 SourceRecord(
-                    source=source,
+                    source=spec.name,
                     resolved_url=resolved_url,
                     status="success",
                     cached=True,
@@ -589,11 +758,11 @@ def build_group(
         else:
             try:
                 text = fetch_url_text(resolved_url)
-                parsed_source = parse_source_text(text, resolved_url)
-                source_cache[resolved_url] = parsed_source
+                parsed_source = parse_source_text(text, resolved_url, spec.behavior)
+                source_cache[cache_key] = parsed_source
                 success_sources.append(
                     SourceRecord(
-                        source=source,
+                        source=spec.name,
                         resolved_url=resolved_url,
                         status="success",
                     )
@@ -601,7 +770,7 @@ def build_group(
             except Exception as exc:  # noqa: BLE001
                 failed_sources.append(
                     SourceRecord(
-                        source=source,
+                        source=spec.name,
                         resolved_url=resolved_url,
                         status="failed",
                         error=str(exc),
@@ -614,14 +783,15 @@ def build_group(
                 if not rule_matches_output(rule_type, output):
                     continue
 
-                # 跨组去重：命中上游 group 同名 output 已有规则则跳过，不进入 source_rules 和 rules。
-                if rule in output_excluded[output.name]:
+                # 跨组去重：按「规范值」判断是否命中上游 group 同名 output 已有规则，
+                # 这样 classical 的 'IP-CIDR,1.2.3.0/24' 与 ipcidr 的 '1.2.3.0/24' 视为同一条。
+                if rule_value(rule) in output_excluded_values[output.name]:
                     continue
 
-                source_seen = output_source_seen[output.name].setdefault(source, set())
+                source_seen = output_source_seen[output.name].setdefault(spec.name, set())
                 if rule not in source_seen:
                     source_seen.add(rule)
-                    output.source_rules.setdefault(source, []).append(rule)
+                    output.source_rules.setdefault(spec.name, []).append(rule)
 
                 seen = output_seen[output.name]
                 if rule in seen:
@@ -638,12 +808,12 @@ def build_group(
     )
 
 
-def write_rule_file(path: Path, build_time: str, rules: list[str], sources: list[SourceRecord]) -> None:
+def write_rule_file(path: Path, build_time: str, rules: list[str], sources: list[SourceRecord], behavior: str = CLASSICAL) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(format_rule_file(build_time, rules, sources), encoding="utf-8")
+    path.write_text(format_rule_file(build_time, rules, sources, behavior), encoding="utf-8")
 
 
-def format_rule_file(build_time: str, rules: list[str], sources: list[SourceRecord]) -> str:
+def format_rule_file(build_time: str, rules: list[str], sources: list[SourceRecord], behavior: str = CLASSICAL) -> str:
     content = [
         f"# Build Date: {build_time}",
         f"# Rule Count: {len(rules)}",
@@ -657,24 +827,29 @@ def format_rule_file(build_time: str, rules: list[str], sources: list[SourceReco
     content.extend(
         [
             "",
-            *rules,
+            *(emit_rule_for_behavior(rule, behavior) for rule in rules),
         ]
     )
     return "\n".join(content).rstrip() + "\n"
 
 
-def read_existing_rules(path: Path) -> list[str] | None:
+def read_existing_rules(path: Path, behavior: str = CLASSICAL) -> list[str] | None:
+    """读取已写入的规则文件，按 output behavior 还原成内部规范形式。"""
+
     if not path.exists():
         return None
-    return [
-        line.strip()
-        for line in path.read_text(encoding="utf-8").splitlines()
-        if line.strip() and not line.lstrip().startswith("#")
-    ]
+    restored: list[str] = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        rule = restore_rule_from_line(line, behavior)
+        if rule is not None:
+            restored.append(rule)
+    return restored
 
 
 def output_rules_changed(root: Path, output: OutputResult) -> bool:
-    existing_rules = read_existing_rules(root / output.path)
+    existing_rules = read_existing_rules(root / output.path, output.behavior)
     return existing_rules != output.rules
 
 
@@ -983,7 +1158,7 @@ def main() -> int:
 
     filters = parse_filters(config)
     global_include = normalize_rule_types(config.get("include"), "include", ALL_RULE_TYPES, filters)
-    source_cache: dict[str, ParsedSource] = {}
+    source_cache: dict[tuple[str, str], ParsedSource] = {}
     results: list[GroupResult] = []
 
     group_names = list(groups.keys())
@@ -1018,8 +1193,10 @@ def main() -> int:
             exclude_sets=exclude_sets,
         )
         result_by_name[group_name] = result
+        # 存「规范值」集合，下游跨组排除时按 rule_value 比较，兼容不同 behavior。
         finalized_rules[group_name] = {
-            output.name: set(output.rules) for output in result.outputs
+            output.name: {rule_value(rule) for rule in output.rules}
+            for output in result.outputs
         }
 
     # 按配置原始顺序输出结果，避免拓扑排序改变产物顺序。
@@ -1067,7 +1244,7 @@ def main() -> int:
         for output in result.outputs:
             if output not in changed_outputs:
                 continue
-            write_rule_file(root / output.path, build_time, output.rules, result.success_sources)
+            write_rule_file(root / output.path, build_time, output.rules, result.success_sources, output.behavior)
 
     write_source_state(state_path, next_state)
     if changed_outputs:

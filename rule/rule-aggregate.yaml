@@ -9,11 +9,18 @@ filters:
   ip: [IP-CIDR, IP-CIDR6, IP-SUFFIX, IP-ASN]
 
 groups:
-  #ChinaMax:
-  #  outputs:
-  #    non_ip: {path: "rule/list/non_ip/ChinaMax.txt", include: ["$domain"]}
-  #    ip: {path: "rule/list/ip/ChinaMax.txt", include: ["$ip"]}
-  #  sources: [ChinaMax]
+  # ChinaMax:
+  #   outputs:
+  #     non_ip: {path: "rule/list/non_ip/ChinaMax.txt", include: ["$domain"]}
+  #     ip: {path: "rule/list/ip/ChinaMax.txt", include: ["$ip"]}
+  #   sources: [ChinaMax]
+
+  ChinaIP:
+    outputs:
+      non_ip: {path: "rule/list/non_ip/ChinaIP.txt", include: ["$domain"]}
+      ip: {path: "rule/list/ip/ChinaIP.txt", type: ipcidr, include: ["$ip"]}
+    sources:
+      - {url: "https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt", behavior: ipcidr}
 
   # 直连指不应该被去广告分流规则屏蔽的域名、IP等，请将此分流规则置于去广告规则之前。
   Direct:

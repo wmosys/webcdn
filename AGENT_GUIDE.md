@@ -138,6 +138,66 @@ except ImportError:
 
 它不应被当成通用 YAML parser。若未来配置需要 YAML anchor、多行字符串、复杂对象等高级能力，要么扩展解析器，要么重新在 Action 中安装 `PyYAML`。
 
+## 规则 behavior（classical / domain / ipcidr）
+
+mihomo 的 rule-provider 支持三种 behavior，对应三种文件格式。脚本支持按 behavior 读写，使裸值源（如 `chnroutes.txt` 这种纯 CIDR 文件）能被正确处理。
+
+### behavior 与文件格式
+
+| behavior | 文件行格式 | 读取时内部补成 | 写出时 |
+|---|---|---|---|
+| `classical`（默认） | `TYPE,value[,...]` 如 `IP-CIDR,1.2.3.0/24` | 原样 | 保留前缀 |
+| `ipcidr` | 裸 CIDR 如 `1.2.3.0/24` | IPv4→`IP-CIDR,值`，IPv6(含`:`)→`IP-CIDR6,值` | 剥前缀，写裸 CIDR |
+| `domain` | 裸域名如 `google.com` | 统一补 `DOMAIN-SUFFIX,值` | 剥前缀，写裸域名 |
+
+关键点：
+
+- `ipcidr`/`domain` 文件**不带类型前缀**，这是 mihomo 协议要求；附加选项如 `no-resolve` 不应出现在这两种文件里（引用方在 rule-providers 使用处声明）。
+- `ipcidr` 源里出现 `1.2.3.0/24,no-resolve` 这种带附加项的行，脚本会容错只取 CIDR 部分（取首个逗号前）。
+- `domain` 源里 `+.example.com` 会被剥成 `DOMAIN-SUFFIX,example.com`（与 mihomo domain 行为一致，纯域名行等价后缀匹配）。
+- 非法行（非注释非空但不符合格式）会被跳过，不报错中止。
+
+### source 声明 behavior
+
+`sources` 支持简写和对象两种写法：
+
+```yaml
+sources:
+  - Google                         # 简写，默认 classical
+  - {name: ChinaIPsBGP}            # 对象，默认 classical
+  - {url: "https://.../chnroutes.txt", behavior: ipcidr}
+  - {url: "https://.../domains.txt", behavior: domain, name: CustomDomains}
+```
+
+- 简写字符串：展开为 `{base}/{name}/{name}.list`，behavior 默认 `classical`。
+- 对象形式：必须提供 `name` 或 `url` 之一；`url` 直接使用，`name` 走 base 展开；`behavior` 可选。
+- `behavior` 可选值：`classical` / `domain` / `ipcidr`，默认 `classical`。
+
+### output 声明 type
+
+output 用 `type` 字段声明产物格式：
+
+```yaml
+outputs:
+  ip:
+    path: "rule/list/ip/ChinaIP.txt"
+    type: ipcidr              # 产出裸 CIDR 文件
+    include: ["$ip"]
+  non_ip:
+    path: "rule/list/non_ip/ChinaIP.txt"
+    include: ["$domain"]      # 省略 type 即 classical
+```
+
+`type` 可选值：`classical` / `domain` / `ipcidr`，默认 `classical`。
+
+### 跨 behavior 归一化去重
+
+跨组去重（`exclude_from`）时按**规范值**比较，即剥掉类型前缀后的值部分。因此 classical 的 `IP-CIDR,1.2.3.0/24` 和 ipcidr 的 `1.2.3.0/24` 会被识别为同一条，避免重复。详见「跨组去重」章节。
+
+### 文件 diff 与 behavior
+
+读取已写入的规则文件做变更比较时，会按 output 的 `type` 还原成内部规范形式（裸 CIDR→`IP-CIDR,值`，裸域名→`DOMAIN-SUFFIX,值`）后再比较，避免「裸值文件 vs 内部规范化表示」误判为每次都变化。
+
 ## 规则抓取与解析
 
 `normalize_source()` 负责把 source 转为 URL：
@@ -289,7 +349,7 @@ groups:
 - `exclude_from` 是一个列表，列出需要排除其规则的上游 group 名称。
 - 上游 group 的内容不会变化，被排除的规则只从当前 group 中剔除。
 - 去重按 output 名维度匹配：`Communication.non_ip` 只排除 `Develop.non_ip` 的规则，不会把 `Develop.ip` 的 IP 规则误排除到域名 output。只有同名 output 之间才参与跨组排除。
-- 去重发生在 group 内部去重之后，以规则完整字符串（如 `DOMAIN-SUFFIX,github.com`）是否相等为准。
+- 去重发生在 group 内部去重之后，按**规范值**（剥掉类型前缀后的值，如 `github.com`、`1.2.3.0/24`）比较，因此不同 behavior 之间也能正确识别同一条规则。
 - 多个上游可以叠加：`exclude_from: [A, B]` 表示排除 A 和 B 对应同名 output 规则的并集。
 - 不支持传递：`C exclude_from [B]` 只排除 B 的规则，不会自动排除 B 从 A 那里排除的规则。
 - 脚本会对 group 按 `exclude_from` 依赖做拓扑排序后再聚合，保证上游先处理。
