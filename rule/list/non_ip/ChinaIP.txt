@@ -1,0 +1,4 @@
+# Build Date: 2026-07-01 10:08:01 +0800
+# Rule Count: 0
+# Source:
+#   - https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt: https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt
