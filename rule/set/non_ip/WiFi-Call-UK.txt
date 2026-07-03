@@ -1,0 +1,14 @@
+DOMAIN-KEYWORD, mcc234
+# 沃达丰
+DOMAIN-SUFFIX,entsrv-uk.vodafone.com
+DOMAIN-SUFFIX,epdg.epc.mnc015.mcc234.pub.3gppnetwork.org
+DOMAIN-SUFFIX,ss.epdg.epc.mnc015.mcc234.pub.3gppnetwork.org
+DOMAIN-SUFFIX,ss.epdg.epc.geo.mnc015.mcc234.pub.3gppnetwork.org
+DOMAIN-SUFFIX,vuk-gto.prod.ondemandconnectivity.com
+# VOXI
+DOMAIN,vfgb.idemia.io
+# CTE
+DOMAIN-SUFFIX,ct.ee.co.uk
+# Giffgaff
+DOMAIN-SUFFIX,giffgaff.com
+DOMAIN-SUFFIX,epdg.epc.mnc010.mcc234.pub.3gppnetwork.org,UK

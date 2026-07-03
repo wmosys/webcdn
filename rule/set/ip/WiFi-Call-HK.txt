@@ -1,0 +1,2 @@
+DOMAIN-KEYWORD, mcc454
+IP-CIDR, 107.178.224.0/19,no-resolve
