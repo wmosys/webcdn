@@ -24,4 +24,5 @@ DOMAIN-SUFFIX,pipeuncle.com
 DOMAIN-SUFFIX,70cigars.com
 DOMAIN-SUFFIX,tecon-gmbh.de
 DOMAIN-SUFFIX,nodeseek.com
+DOMAIN-SUFFIX,geneldns.com
 ################## EOF ##################
