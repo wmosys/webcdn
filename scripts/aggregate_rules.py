@@ -6,6 +6,7 @@ import ast
 import json
 import os
 import sys
+import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from datetime import timezone
@@ -357,17 +358,55 @@ def normalize_source(source: str, base_url: str, group_name: str = "") -> str:
     return f"{base_url.rstrip('/')}/{source}/{source}.list"
 
 
-def fetch_url_text(url: str, timeout: int = 30) -> str:
-    request = Request(url, headers={"User-Agent": "Mozilla/5.0"})
-    try:
-        with urlopen(request, timeout=timeout) as response:
-            raw = response.read()
-    except HTTPError as exc:
-        raise RuntimeError(f"HTTP {exc.code} {exc.reason}") from exc
-    except URLError as exc:
-        raise RuntimeError(str(exc.reason) if exc.reason else str(exc)) from exc
+# 可重试的 HTTP 状态码：限流与临时服务端错误。
+RETRYABLE_HTTP_STATUS = {429, 500, 502, 503, 504}
+MAX_FETCH_RETRIES = 4
 
-    return raw.decode("utf-8-sig", errors="replace")
+
+def fetch_url_text(url: str, timeout: int = 30) -> str:
+    """抓取 URL 文本，对限流(429)和 5xx 做指数退避重试。
+
+    退避基数 2 秒、倍增、最多 4 次；尊重 Retry-After 响应头；加少量抖动避免
+    大量源同时重试再次触发限流。
+    """
+
+    last_error: str = ""
+    for attempt in range(1, MAX_FETCH_RETRIES + 1):
+        request = Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        try:
+            with urlopen(request, timeout=timeout) as response:
+                return response.read().decode("utf-8-sig", errors="replace")
+        except HTTPError as exc:
+            last_error = f"HTTP {exc.code} {exc.reason}"
+            if exc.code not in RETRYABLE_HTTP_STATUS or attempt == MAX_FETCH_RETRIES:
+                raise RuntimeError(last_error) from exc
+            # 优先尊重服务器返回的 Retry-After（秒）。
+            retry_after = exc.headers.get("Retry-After") if exc.headers else None
+            wait = _backoff_seconds(attempt, retry_after)
+            time.sleep(wait)
+            continue
+        except URLError as exc:
+            last_error = str(exc.reason) if exc.reason else str(exc)
+            # 网络层错误（DNS、超时、连接重置）同样退避重试。
+            if attempt == MAX_FETCH_RETRIES:
+                raise RuntimeError(last_error) from exc
+            time.sleep(_backoff_seconds(attempt))
+            continue
+    raise RuntimeError(last_error or "未知抓取错误")
+
+
+def _backoff_seconds(attempt: int, retry_after: str | None = None) -> float:
+    """计算退避秒数：尊重 Retry-After，否则指数退避 + 抖动。"""
+
+    if retry_after:
+        try:
+            return max(float(retry_after), 1.0)
+        except (TypeError, ValueError):
+            pass
+    # ponytail: 简单指数退避，2/4/8 秒，加最多 50% 抖动打散重试。
+    import random
+    base = 2 ** attempt
+    return float(base) + random.uniform(0, base * 0.5)
 
 
 def normalize_behavior(value: Any, field_name: str) -> str:
