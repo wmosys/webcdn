@@ -1,6 +1,6 @@
 # 规则编译日志
 
-- 编译日期：2026-07-12 02:51:11 +0800
+- 编译日期：2026-07-15 03:07:34 +0800
 
 ## ChinaIP
 - 输出文件：`rule/list/non_ip/ChinaIP.txt`（0 条）
@@ -147,7 +147,7 @@
 - 无
 
 ## Download
-- 输出文件：`rule/list/non_ip/Download.txt`（8 条）
+- 输出文件：`rule/list/non_ip/Download.txt`（9 条）
 - 输出文件：`rule/list/ip/Download.txt`（0 条）
 - 成功源：
 - `https://ruleset.skk.moe/Clash/domainset/download.txt` -> `https://ruleset.skk.moe/Clash/domainset/download.txt`
