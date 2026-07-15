@@ -1,5 +1,5 @@
-# Build Date: 2026-07-11 03:18:47 +0800
-# Rule Count: 139
+# Build Date: 2026-07-16 02:59:41 +0800
+# Rule Count: 137
 # Source:
 #   - https://ruleset.skk.moe/Clash/domainset/cdn.txt: https://ruleset.skk.moe/Clash/domainset/cdn.txt
 #   - https://ruleset.skk.moe/Clash/non_ip/cdn.txt: https://ruleset.skk.moe/Clash/non_ip/cdn.txt
@@ -96,11 +96,9 @@ DOMAIN,res.cdn.office.net
 DOMAIN-SUFFIX,cn.windowssearch.com
 DOMAIN,res-1.cdn.office.net
 DOMAIN,res-2.cdn.office.net
-DOMAIN-SUFFIX,shell.cdn.office.net
 DOMAIN-SUFFIX,download.microsoft.com
 DOMAIN-SUFFIX,b.c2r.ts.cdn.office.net
 DOMAIN-SUFFIX,ctldl.windowsupdate.com
-DOMAIN-SUFFIX,developer.microsoft.com
 DOMAIN-SUFFIX,f.c2r.ts.cdn.office.net
 DOMAIN-SUFFIX,officecdn.microsoft.com
 DOMAIN-SUFFIX,storeedge.microsoft.com

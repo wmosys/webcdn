@@ -1,10 +1,10 @@
 # 规则编译日志
 
-- 编译日期：2026-07-15 03:07:34 +0800
+- 编译日期：2026-07-16 02:59:41 +0800
 
 ## ChinaIP
 - 输出文件：`rule/list/non_ip/ChinaIP.txt`（0 条）
-- 输出文件：`rule/list/ip/ChinaIP.txt`（3903 条）
+- 输出文件：`rule/list/ip/ChinaIP.txt`（3904 条）
 - 成功源：
 - `https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt` -> `https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt`
 - 失败源：
@@ -34,7 +34,7 @@
 - 无
 
 ## CDN
-- 输出文件：`rule/list/non_ip/CDN.txt`（139 条）
+- 输出文件：`rule/list/non_ip/CDN.txt`（137 条）
 - 输出文件：`rule/list/ip/CDN.txt`（0 条）
 - 成功源：
 - `https://ruleset.skk.moe/Clash/domainset/cdn.txt` -> `https://ruleset.skk.moe/Clash/domainset/cdn.txt`
