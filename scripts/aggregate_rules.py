@@ -348,11 +348,17 @@ def get_setting(data: dict[str, Any], *keys: str, default: Any = None) -> Any:
     return current
 
 
+def empty_source_error(group_name: str = "") -> ValueError:
+    """构造空字符串源配置的统一报错，供多处 sources 解析复用。"""
+
+    hint = f"{group_name}.sources" if group_name else "sources"
+    return ValueError(f"{hint} 存在空字符串源配置，请检查 YAML 缩进或多余空行。")
+
+
 def normalize_source(source: str, base_url: str, group_name: str = "") -> str:
     source = source.strip()
     if not source:
-        hint = f"{group_name}.sources" if group_name else "sources"
-        raise ValueError(f"{hint} 存在空字符串源配置，请检查 YAML 缩进或多余空行。")
+        raise empty_source_error(group_name)
     if source.startswith(("http://", "https://")):
         return source.rstrip("/")
     return f"{base_url.rstrip('/')}/{source}/{source}.list"
@@ -472,6 +478,23 @@ def emit_rule_for_behavior(rule: str, behavior: str) -> str:
     return rule_value(rule)
 
 
+# 非 classical behavior 到裸值解析器的映射，供源解析与文件还原共用。
+BEHAVIOR_LINE_PARSERS = {
+    IPCIDR: parse_cidr_line,
+    DOMAIN: parse_domain_line,
+}
+
+
+def parse_value_line(value: str, behavior: str) -> tuple[str, str] | None:
+    """按非 classical behavior 把裸值行解析为 (rule_type, canonical)。
+
+    behavior 无对应解析器时返回 None。
+    """
+
+    parser = BEHAVIOR_LINE_PARSERS.get(behavior)
+    return parser(value) if parser else None
+
+
 def restore_rule_from_line(line: str, behavior: str) -> str | None:
     """把已写入文件的行按 output behavior 还原成内部规范规则，供 diff 比较。
 
@@ -486,13 +509,8 @@ def restore_rule_from_line(line: str, behavior: str) -> str | None:
         return None
     if behavior == CLASSICAL:
         return value
-    if behavior == IPCIDR:
-        parsed = parse_cidr_line(value)
-        return parsed[1] if parsed else None
-    if behavior == DOMAIN:
-        parsed = parse_domain_line(value)
-        return parsed[1] if parsed else None
-    return value
+    parsed = parse_value_line(value, behavior)
+    return parsed[1] if parsed else None
 
 
 def parse_rule_line(raw_line: str) -> tuple[str, str] | None:
@@ -519,12 +537,10 @@ def parse_source_text(text: str, resolved_url: str, behavior: str = CLASSICAL) -
         if not line or line.startswith("#"):
             continue
 
-        if behavior == IPCIDR:
-            parsed = parse_cidr_line(line)
-        elif behavior == DOMAIN:
-            parsed = parse_domain_line(line)
-        else:
+        if behavior == CLASSICAL:
             parsed = parse_rule_line(raw_line)
+        else:
+            parsed = parse_value_line(line, behavior)
 
         if parsed is None:
             continue
@@ -682,8 +698,7 @@ def parse_sources(group_name: str, group_cfg: dict[str, Any], base_url: str) -> 
         if isinstance(item, str):
             source_name = item.strip()
             if not source_name:
-                hint = f"{group_name}.sources"
-                raise ValueError(f"{hint} 存在空字符串源配置，请检查 YAML 缩进或多余空行。")
+                raise empty_source_error(group_name)
             specs.append(
                 SourceSpec(
                     name=source_name,
@@ -847,9 +862,15 @@ def build_group(
     )
 
 
-def write_rule_file(path: Path, build_time: str, rules: list[str], sources: list[SourceRecord], behavior: str = CLASSICAL) -> None:
+def write_text_file(path: Path, content: str) -> None:
+    """确保父目录存在后写入 UTF-8 文本文件，供各写文件函数复用。"""
+
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(format_rule_file(build_time, rules, sources, behavior), encoding="utf-8")
+    path.write_text(content, encoding="utf-8")
+
+
+def write_rule_file(path: Path, build_time: str, rules: list[str], sources: list[SourceRecord], behavior: str = CLASSICAL) -> None:
+    write_text_file(path, format_rule_file(build_time, rules, sources, behavior))
 
 
 def format_rule_file(build_time: str, rules: list[str], sources: list[SourceRecord], behavior: str = CLASSICAL) -> str:
@@ -936,49 +957,27 @@ def build_source_state(results: list[GroupResult]) -> dict[str, Any]:
 
 
 def write_source_state(path: Path, state: dict[str, Any]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps(state, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
+    write_text_file(path, json.dumps(state, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
+
+
+def get_output_source_map(state: dict[str, Any], group_name: str, output_name: str) -> dict[str, Any]:
+    """安全读取 state 中 group -> output -> sources 映射，缺失或类型不符时返回空 dict。"""
+
+    node: Any = state
+    for key in ("groups", group_name, "outputs", output_name, "sources"):
+        if not isinstance(node, dict):
+            return {}
+        node = node.get(key, {})
+    return node if isinstance(node, dict) else {}
 
 
 def get_previous_source_rules(state: dict[str, Any], group_name: str, output_name: str, source: str) -> list[str]:
-    groups = state.get("groups", {})
-    if not isinstance(groups, dict):
-        return []
-    group_state = groups.get(group_name, {})
-    if not isinstance(group_state, dict):
-        return []
-    outputs = group_state.get("outputs", {})
-    if not isinstance(outputs, dict):
-        return []
-    output_state = outputs.get(output_name, {})
-    if not isinstance(output_state, dict):
-        return []
-    sources = output_state.get("sources", {})
-    if not isinstance(sources, dict):
-        return []
-    rules = sources.get(source, [])
+    rules = get_output_source_map(state, group_name, output_name).get(source, [])
     return rules if isinstance(rules, list) else []
 
 
 def get_previous_source_names(state: dict[str, Any], group_name: str, output_name: str) -> set[str]:
-    groups = state.get("groups", {})
-    if not isinstance(groups, dict):
-        return set()
-    group_state = groups.get(group_name, {})
-    if not isinstance(group_state, dict):
-        return set()
-    outputs = group_state.get("outputs", {})
-    if not isinstance(outputs, dict):
-        return set()
-    output_state = outputs.get(output_name, {})
-    if not isinstance(output_state, dict):
-        return set()
-    sources = output_state.get("sources", {})
-    if not isinstance(sources, dict):
-        return set()
+    sources = get_output_source_map(state, group_name, output_name)
     return {source for source in sources if isinstance(source, str)}
 
 
@@ -1052,20 +1051,28 @@ def group_output_diffs(output_diffs: list[OutputRuleDiff]) -> list[GroupRuleDiff
     return list(groups.values())
 
 
-def build_update_report(output_diffs: list[OutputRuleDiff]) -> str:
-    repository = workflow_value("GITHUB_REPOSITORY", "local")
-    ref_name = workflow_value("GITHUB_REF_NAME", "local")
-    run_url = github_actions_run_url()
+def build_report_meta_lines(include_event: bool = False) -> list[str]:
+    """构造报告公共元信息行：仓库、分支、可选触发事件、运行链接。"""
 
+    lines = [
+        f"仓库：`{workflow_value('GITHUB_REPOSITORY', 'local')}`",
+        f"分支：`{workflow_value('GITHUB_REF_NAME', 'local')}`",
+    ]
+    if include_event:
+        lines.append(f"触发：`{workflow_value('GITHUB_EVENT_NAME', 'local')}`")
+    run_url = github_actions_run_url()
+    if run_url:
+        lines.append(f"运行：[查看 GitHub Actions]({run_url})")
+    return lines
+
+
+def build_update_report(output_diffs: list[OutputRuleDiff]) -> str:
     lines = [
         "## 规则更新",
         "",
-        f"仓库：`{repository}`",
-        f"分支：`{ref_name}`",
+        *build_report_meta_lines(),
+        "",
     ]
-    if run_url:
-        lines.append(f"运行：[查看 GitHub Actions]({run_url})")
-    lines.append("")
 
     for group_diff in group_output_diffs(output_diffs):
         lines.extend(
@@ -1089,37 +1096,22 @@ def build_update_report(output_diffs: list[OutputRuleDiff]) -> str:
 
 
 def write_update_report(path: Path, output_diffs: list[OutputRuleDiff]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(build_update_report(output_diffs), encoding="utf-8")
+    write_text_file(path, build_update_report(output_diffs))
 
 
 def build_initialized_report() -> str:
-    repository = workflow_value("GITHUB_REPOSITORY", "local")
-    ref_name = workflow_value("GITHUB_REF_NAME", "local")
-    event_name = workflow_value("GITHUB_EVENT_NAME", "local")
-    run_url = github_actions_run_url()
-
     lines = [
         "## 状态初始化",
         "",
-        f"仓库：`{repository}`",
-        f"分支：`{ref_name}`",
-        f"触发：`{event_name}`",
+        *build_report_meta_lines(include_event=True),
+        "",
+        "未找到历史源规则基线，已初始化 GitHub Actions cache。下次运行起将推送源规则新增/删除统计。",
     ]
-    if run_url:
-        lines.append(f"运行：[查看 GitHub Actions]({run_url})")
-    lines.extend(
-        [
-            "",
-            "未找到历史源规则基线，已初始化 GitHub Actions cache。下次运行起将推送源规则新增/删除统计。",
-        ]
-    )
     return "\n".join(lines).rstrip() + "\n"
 
 
 def write_initialized_report(path: Path) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(build_initialized_report(), encoding="utf-8")
+    write_text_file(path, build_initialized_report())
 
 
 def format_source_line(record: SourceRecord) -> str:
@@ -1132,7 +1124,6 @@ def format_failed_line(record: SourceRecord) -> str:
 
 
 def write_build_log(path: Path, build_time: str, results: list[GroupResult]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
     lines: list[str] = [
         "# 规则编译日志",
         "",
@@ -1164,7 +1155,7 @@ def write_build_log(path: Path, build_time: str, results: list[GroupResult]) -> 
 
         lines.append("")
 
-    path.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
+    write_text_file(path, "\n".join(lines).rstrip() + "\n")
 
 
 def load_config(path: Path) -> dict[str, Any]:
