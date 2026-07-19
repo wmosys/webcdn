@@ -5,6 +5,7 @@ import argparse
 import ast
 import json
 import os
+import random
 import sys
 import time
 from dataclasses import dataclass, field
@@ -361,6 +362,8 @@ def normalize_source(source: str, base_url: str, group_name: str = "") -> str:
 # 可重试的 HTTP 状态码：限流与临时服务端错误。
 RETRYABLE_HTTP_STATUS = {429, 500, 502, 503, 504}
 MAX_FETCH_RETRIES = 4
+# 退避上限，避免服务器返回过大的 Retry-After 让整个 Action 卡死。
+MAX_BACKOFF_SECONDS = 60.0
 
 
 def fetch_url_text(url: str, timeout: int = 30) -> str:
@@ -400,13 +403,12 @@ def _backoff_seconds(attempt: int, retry_after: str | None = None) -> float:
 
     if retry_after:
         try:
-            return max(float(retry_after), 1.0)
+            return min(max(float(retry_after), 1.0), MAX_BACKOFF_SECONDS)
         except (TypeError, ValueError):
             pass
-    # ponytail: 简单指数退避，2/4/8 秒，加最多 50% 抖动打散重试。
-    import random
+    # 简单指数退避，2/4/8 秒，加最多 50% 抖动打散重试，并限制在上限内。
     base = 2 ** attempt
-    return float(base) + random.uniform(0, base * 0.5)
+    return min(float(base) + random.uniform(0, base * 0.5), MAX_BACKOFF_SECONDS)
 
 
 def normalize_behavior(value: Any, field_name: str) -> str:
