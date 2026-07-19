@@ -1,4 +1,4 @@
-DOMAIN-KEYWORD, mcc234
+DOMAIN-KEYWORD,mcc234
 # 沃达丰
 DOMAIN-SUFFIX,entsrv-uk.vodafone.com
 DOMAIN-SUFFIX,epdg.epc.mnc015.mcc234.pub.3gppnetwork.org
@@ -11,4 +11,4 @@ DOMAIN,vfgb.idemia.io
 DOMAIN-SUFFIX,ct.ee.co.uk
 # Giffgaff
 DOMAIN-SUFFIX,giffgaff.com
-DOMAIN-SUFFIX,epdg.epc.mnc010.mcc234.pub.3gppnetwork.org,UK
+DOMAIN-SUFFIX,epdg.epc.mnc010.mcc234.pub.3gppnetwork.org

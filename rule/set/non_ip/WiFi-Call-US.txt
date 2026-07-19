@@ -1,4 +1,3 @@
-
 DOMAIN-KEYWORD,mcc310
 DOMAIN-SUFFIX,mobilefuse.com
 DOMAIN-SUFFIX,inmobi.com
@@ -12,7 +11,7 @@ DOMAIN-SUFFIX,agkn.com
 DOMAIN-SUFFIX,tktn.at
 DOMAIN-SUFFIX,inner-active.mobi
 DOMAIN-SUFFIX,att.com
-DOMAIN-SUFFIX,att,net
+DOMAIN-SUFFIX,att.net
 DOMAIN-KEYWORD,t-mobile
 DOMAIN-SUFFIX,optimizely.com
 DOMAIN-SUFFIX,redirect.ultra.me
