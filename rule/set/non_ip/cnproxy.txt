@@ -1,6 +1,9 @@
 #########################################
-# Mainland Domain
+# Mainland Domain 直连
 #########################################
 DOMAIN-SUFFIX,bmjsub.org
 DOMAIN-SUFFIX,bjnet2.com
+DOMAIN-SUFFIX,s2a.mosy.xyz
+DOMAIN-SUFFIX,s2asg.mosy.xyz
+DOMAIN-SUFFIX,s2acf.mosy.xyz
 ################## EOF ##################
