@@ -120,7 +120,8 @@ jobs:
           fi
 
           # 用 JSON body 提交，避免表单 urlencode 对 desp 长度的限制导致消息被截断。
-          python3 scripts/notify_serverchan.py "$SERVER_CHAN_SEND_URL" "$TITLE" "$REPORT_FILE"
+          # 推送 URL 内含 sendkey，通过环境变量传入脚本，避免出现在进程列表/命令行参数中。
+          python3 scripts/notify_serverchan.py "$TITLE" "$REPORT_FILE"
 
       - name: Fail workflow when generation failed
         if: ${{ steps.generate.outputs.exit_code != '0' }}
