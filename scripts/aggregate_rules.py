@@ -421,6 +421,14 @@ def fetch_url_text(url: str, timeout: int = 30) -> str:
                 raise RuntimeError(last_error) from exc
             time.sleep(_backoff_seconds(attempt))
             continue
+        except OSError as exc:
+            # 读取超时/连接重置等有时以裸 OSError（含 socket.timeout/TimeoutError）
+            # 抛出而不被包成 URLError，同样退避重试而不是当场失败。
+            last_error = str(exc)
+            if attempt == MAX_FETCH_RETRIES:
+                raise RuntimeError(last_error) from exc
+            time.sleep(_backoff_seconds(attempt))
+            continue
     raise RuntimeError(last_error or "未知抓取错误")
 
 
@@ -843,7 +851,9 @@ def build_group(
                         status="success",
                     )
                 )
-            except Exception as exc:  # noqa: BLE001
+            except RuntimeError as exc:
+                # 仅容忍抓取失败（fetch_url_text 把网络/HTTP 错误统一包成 RuntimeError）。
+                # 解析/编程错误等非预期异常继续向上抛出，避免被伪装成「失败源」而掩盖真实 bug。
                 failed_sources.append(
                     SourceRecord(
                         source=spec.name,
