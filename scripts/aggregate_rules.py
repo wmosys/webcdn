@@ -14,6 +14,7 @@ from datetime import timedelta
 from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
+from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 
 try:
@@ -363,6 +364,24 @@ RETRYABLE_HTTP_STATUS = {429, 500, 502, 503, 504}
 MAX_FETCH_RETRIES = 4
 
 
+ALLOWED_URL_SCHEMES = {"http", "https"}
+
+
+def validate_fetch_url(url: str) -> str:
+    """校验待抓取 URL 仅允许 http/https，拒绝 file/ftp/data 等本地或非预期协议。
+
+    urllib 默认支持 file://、ftp://、data: 等协议，若配置中出现这类源会造成
+    本地文件读取或 SSRF。此处在抓取前统一收口校验。
+    """
+
+    scheme = urlsplit(url).scheme.lower()
+    if scheme not in ALLOWED_URL_SCHEMES:
+        raise RuntimeError(
+            f"不支持的 URL 协议：{scheme or '(空)'}（仅允许 http/https）：{url}"
+        )
+    return url
+
+
 def fetch_url_text(url: str, timeout: int = 30) -> str:
     """抓取 URL 文本，对限流(429)和 5xx 做指数退避重试。
 
@@ -370,6 +389,7 @@ def fetch_url_text(url: str, timeout: int = 30) -> str:
     大量源同时重试再次触发限流。
     """
 
+    validate_fetch_url(url)
     last_error: str = ""
     for attempt in range(1, MAX_FETCH_RETRIES + 1):
         request = Request(url, headers={"User-Agent": "Mozilla/5.0"})
