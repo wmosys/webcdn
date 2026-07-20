@@ -1,5 +1,5 @@
-# Build Date: 2026-06-28 15:08:11 +0800
-# Rule Count: 231
+# Build Date: 2026-08-15 02:43:18 +0800
+# Rule Count: 242
 # Source:
 #   - Direct: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Direct/Direct.list
 #   - https://raw.githubusercontent.com/wmosys/webcdn/refs/heads/main/rule/set/non_ip/direct.txt: https://raw.githubusercontent.com/wmosys/webcdn/refs/heads/main/rule/set/non_ip/direct.txt
@@ -235,3 +235,14 @@ DOMAIN-KEYWORD,wb_ad
 DOMAIN-KEYWORD,weather-adge.apple.com
 DOMAIN-KEYWORD,weather-edge.apple.com
 DOMAIN-KEYWORD,westlawchina
+DOMAIN-SUFFIX,s2a.mosy.xyz
+DOMAIN-SUFFIX,s2asg.mosy.xyz
+DOMAIN-SUFFIX,s2acf.mosy.xyz
+DOMAIN-SUFFIX,s2aeo.mosy.xyz
+DOMAIN-SUFFIX,sscf.mosy.xyz
+DOMAIN-SUFFIX,bark.mosy.xyz
+DOMAIN-SUFFIX,wloc.mosy.xyz
+DOMAIN-SUFFIX,bmjsub.org
+DOMAIN-SUFFIX,bjnet2.com
+DOMAIN-SUFFIX,kkws.cn
+DOMAIN-SUFFIX,kayak.com.cn
