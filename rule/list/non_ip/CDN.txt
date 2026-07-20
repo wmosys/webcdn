@@ -1,12 +1,12 @@
-# Build Date: 2026-07-16 02:59:41 +0800
-# Rule Count: 137
+# Build Date: 2026-08-10 02:29:19 +0800
+# Rule Count: 139
 # Source:
 #   - https://ruleset.skk.moe/Clash/domainset/cdn.txt: https://ruleset.skk.moe/Clash/domainset/cdn.txt
 #   - https://ruleset.skk.moe/Clash/non_ip/cdn.txt: https://ruleset.skk.moe/Clash/non_ip/cdn.txt
 #   - https://ruleset.skk.moe/Clash/non_ip/microsoft_cdn.txt: https://ruleset.skk.moe/Clash/non_ip/microsoft_cdn.txt
 #   - https://ruleset.skk.moe/Clash/domainset/apple_cdn.txt: https://ruleset.skk.moe/Clash/domainset/apple_cdn.txt
 
-DOMAIN,7h1s_rul35et_i5_mad3_by_5ukk4w-ruleset.skk.moe
+DOMAIN,7h15.ru1353t.1s.m4d3.by.5ukk4w.skk.moe
 DOMAIN,cdn-msp.jmcomic.me
 DOMAIN,cdn-msp.18comic.org
 DOMAIN,cdn-msp.18comic.vip
@@ -19,6 +19,7 @@ DOMAIN-KEYWORD,dsn.algolia.net
 DOMAIN-KEYWORD,-thumbs.pornhost.com
 DOMAIN-KEYWORD,-cdn.eporner.com
 DOMAIN-KEYWORD,cdn.adultempire.com
+DOMAIN-KEYWORD,-assets.dmm.co.jp
 DOMAIN-KEYWORD,static.trustpilot.com
 DOMAIN-KEYWORD,scripts.trustpilot.com
 DOMAIN-KEYWORD,images.trustpilot.com
@@ -69,6 +70,7 @@ DOMAIN-WILDCARD,blog-imgs-??.2nt.com
 DOMAIN-WILDCARD,blog-imgs-??.fc2.com
 DOMAIN-WILDCARD,rr?---??.ouo.si
 DOMAIN-WILDCARD,s3-*.figma.com
+DOMAIN-WILDCARD,cdn.*.dmm.co.jp
 DOMAIN-WILDCARD,*.kuaikan-cdn?.com
 DOMAIN-WILDCARD,*.fsvod?.com
 DOMAIN-WILDCARD,image*.cloudokyo.cloud
