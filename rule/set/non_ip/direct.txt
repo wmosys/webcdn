@@ -3,6 +3,16 @@
 #
 # This file contains domains and process that should not be proxied.
 #########################################
+DOMAIN-SUFFIX,s2a.mosy.xyz
+DOMAIN-SUFFIX,s2asg.mosy.xyz
+DOMAIN-SUFFIX,s2acf.mosy.xyz
+DOMAIN-SUFFIX,s2aeo.mosy.xyz
+DOMAIN-SUFFIX,sscf.mosy.xyz
+DOMAIN-SUFFIX,bark.mosy.xyz
+DOMAIN-SUFFIX,wloc.mosy.xyz
+DOMAIN-SUFFIX,wloc.mosy.xyz
+DOMAIN-SUFFIX,bmjsub.org
+DOMAIN-SUFFIX,bjnet2.com
 PROCESS-NAME,nebula
 PROCESS-NAME,nebula.exe
 PROCESS-NAME,kkwsvpn
