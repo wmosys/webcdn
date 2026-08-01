@@ -1,6 +1,6 @@
 # 规则编译日志
 
-- 编译日期：2026-08-01 03:13:39 +0800
+- 编译日期：2026-08-02 02:58:37 +0800
 
 ## ChinaIP
 - 输出文件：`rule/list/non_ip/ChinaIP.txt`（0 条）
@@ -136,7 +136,7 @@
 - 无
 
 ## GlobalProxy
-- 输出文件：`rule/list/non_ip/GlobalProxy.txt`（7209 条）
+- 输出文件：`rule/list/non_ip/GlobalProxy.txt`（7210 条）
 - 输出文件：`rule/list/ip/GlobalProxy.txt`（55 条）
 - 成功源：
 - `Proxy` -> `https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Proxy/Proxy.list`
