@@ -1,5 +1,5 @@
-# Build Date: 2026-08-02 02:58:37 +0800
-# Rule Count: 7210
+# Build Date: 2026-08-04 03:22:00 +0800
+# Rule Count: 7211
 # Source:
 #   - Proxy: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Proxy/Proxy.list
 #   - https://ruleset.skk.moe/Clash/non_ip/global.txt: https://ruleset.skk.moe/Clash/non_ip/global.txt
@@ -7162,6 +7162,7 @@ DOMAIN-SUFFIX,prowritingaid.com
 DOMAIN-SUFFIX,redbullracing.com
 DOMAIN-SUFFIX,stackexchange.com
 DOMAIN-SUFFIX,thaiheadlines.com
+DOMAIN-SUFFIX,trainingpeaks.com
 DOMAIN-SUFFIX,trycloudflare.com
 DOMAIN-SUFFIX,videodelivery.net
 DOMAIN-SUFFIX,wikifunctions.org

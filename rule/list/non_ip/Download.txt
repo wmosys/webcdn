@@ -1,5 +1,5 @@
-# Build Date: 2026-08-01 03:13:39 +0800
-# Rule Count: 9
+# Build Date: 2026-08-04 03:22:00 +0800
+# Rule Count: 10
 # Source:
 #   - https://ruleset.skk.moe/Clash/domainset/download.txt: https://ruleset.skk.moe/Clash/domainset/download.txt
 #   - https://ruleset.skk.moe/Clash/non_ip/download.txt: https://ruleset.skk.moe/Clash/non_ip/download.txt
@@ -13,3 +13,4 @@ DOMAIN-WILDCARD,*.s3.*.backblazeb2.com
 DOMAIN-WILDCARD,cdn-*.comaps.app
 DOMAIN-WILDCARD,cdn-*.comaps.tech
 DOMAIN-WILDCARD,cdn-*.organicmaps.app
+DOMAIN-WILDCARD,dl-*.mypikpak.com
