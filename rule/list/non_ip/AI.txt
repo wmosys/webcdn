@@ -1,9 +1,9 @@
-# Build Date: 2026-08-01 03:13:39 +0800
+# Build Date: 2026-08-06 03:19:09 +0800
 # Rule Count: 49
 # Source:
 #   - https://ruleset.skk.moe/Clash/non_ip/ai.txt: https://ruleset.skk.moe/Clash/non_ip/ai.txt
 
-DOMAIN,7h15_ru1353t_1s_m4d3_by_5ukk4w.skk.moe
+DOMAIN,7h15.ru1353t.1s.m4d3.by.5ukk4w.skk.moe
 DOMAIN-SUFFIX,g.ai
 DOMAIN-SUFFIX,x.ai
 DOMAIN-SUFFIX,ai.com
