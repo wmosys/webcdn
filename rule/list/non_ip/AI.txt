@@ -1,5 +1,5 @@
-# Build Date: 2026-08-06 03:19:09 +0800
-# Rule Count: 49
+# Build Date: 2026-08-08 02:43:37 +0800
+# Rule Count: 50
 # Source:
 #   - https://ruleset.skk.moe/Clash/non_ip/ai.txt: https://ruleset.skk.moe/Clash/non_ip/ai.txt
 
@@ -20,6 +20,7 @@ DOMAIN-SUFFIX,claude.com
 DOMAIN-SUFFIX,openart.ai
 DOMAIN-SUFFIX,chatgpt.com
 DOMAIN-SUFFIX,clipdrop.co
+DOMAIN-SUFFIX,chatgpt.site
 DOMAIN-SUFFIX,deepmind.com
 DOMAIN,ai.google.dev
 DOMAIN-SUFFIX,anthropic.com
