@@ -1,5 +1,5 @@
-# Build Date: 2026-07-25 03:15:22 +0800
-# Rule Count: 240
+# Build Date: 2026-08-15 02:43:18 +0800
+# Rule Count: 242
 # Source:
 #   - Direct: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Direct/Direct.list
 #   - https://raw.githubusercontent.com/wmosys/webcdn/refs/heads/main/rule/set/non_ip/direct.txt: https://raw.githubusercontent.com/wmosys/webcdn/refs/heads/main/rule/set/non_ip/direct.txt
@@ -244,3 +244,5 @@ DOMAIN-SUFFIX,bark.mosy.xyz
 DOMAIN-SUFFIX,wloc.mosy.xyz
 DOMAIN-SUFFIX,bmjsub.org
 DOMAIN-SUFFIX,bjnet2.com
+DOMAIN-SUFFIX,kkws.cn
+DOMAIN-SUFFIX,kayak.com.cn
