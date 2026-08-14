@@ -10,9 +10,10 @@ DOMAIN-SUFFIX,s2aeo.mosy.xyz
 DOMAIN-SUFFIX,sscf.mosy.xyz
 DOMAIN-SUFFIX,bark.mosy.xyz
 DOMAIN-SUFFIX,wloc.mosy.xyz
-DOMAIN-SUFFIX,wloc.mosy.xyz
 DOMAIN-SUFFIX,bmjsub.org
 DOMAIN-SUFFIX,bjnet2.com
+DOMAIN-SUFFIX,kkws.cn
+DOMAIN-SUFFIX,kayak.com.cn
 PROCESS-NAME,nebula
 PROCESS-NAME,nebula.exe
 PROCESS-NAME,kkwsvpn
