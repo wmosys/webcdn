@@ -1,5 +1,5 @@
-# Build Date: 2026-08-10 02:29:19 +0800
-# Rule Count: 139
+# Build Date: 2026-08-20 02:22:50 +0800
+# Rule Count: 136
 # Source:
 #   - https://ruleset.skk.moe/Clash/domainset/cdn.txt: https://ruleset.skk.moe/Clash/domainset/cdn.txt
 #   - https://ruleset.skk.moe/Clash/non_ip/cdn.txt: https://ruleset.skk.moe/Clash/non_ip/cdn.txt
@@ -30,8 +30,6 @@ DOMAIN-KEYWORD,-assets.worldsex.com
 DOMAIN-KEYWORD,-thumbs.worldsex.com
 DOMAIN-KEYWORD,99avcdn
 DOMAIN-KEYWORD,-images.disco-api.com
-DOMAIN-KEYWORD,vdownload.hanime1
-DOMAIN-KEYWORD,fonts.hanime1
 DOMAIN-KEYWORD,static.grammarly.com
 DOMAIN-WILDCARD,cdn.*.office.net
 DOMAIN-WILDCARD,cdn.*.microsoft.com
@@ -85,7 +83,6 @@ DOMAIN-WILDCARD,*.skyearth?.xyz
 DOMAIN-WILDCARD,*.img.*.sendibm?.com
 DOMAIN-WILDCARD,cdn?.18girlssex.com
 DOMAIN-WILDCARD,uploads-*.insided.com
-DOMAIN-WILDCARD,s*.hanime1
 DOMAIN-WILDCARD,img-*.now.com
 DOMAIN-WILDCARD,assets.*.imaga.co
 DOMAIN-WILDCARD,cdn*.pigav.com

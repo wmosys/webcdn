@@ -1,6 +1,6 @@
 # 规则编译日志
 
-- 编译日期：2026-08-19 02:26:30 +0800
+- 编译日期：2026-08-20 02:22:50 +0800
 
 ## ChinaIP
 - 输出文件：`rule/list/non_ip/ChinaIP.txt`（0 条）
@@ -34,7 +34,7 @@
 - 无
 
 ## CDN
-- 输出文件：`rule/list/non_ip/CDN.txt`（139 条）
+- 输出文件：`rule/list/non_ip/CDN.txt`（136 条）
 - 输出文件：`rule/list/ip/CDN.txt`（0 条）
 - 成功源：
 - `https://ruleset.skk.moe/Clash/domainset/cdn.txt` -> `https://ruleset.skk.moe/Clash/domainset/cdn.txt`
