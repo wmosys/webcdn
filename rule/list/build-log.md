@@ -1,10 +1,10 @@
 # 规则编译日志
 
-- 编译日期：2026-08-22 02:25:47 +0800
+- 编译日期：2026-08-23 02:18:23 +0800
 
 ## ChinaIP
 - 输出文件：`rule/list/non_ip/ChinaIP.txt`（0 条）
-- 输出文件：`rule/list/ip/ChinaIP.txt`（3915 条）
+- 输出文件：`rule/list/ip/ChinaIP.txt`（3914 条）
 - 成功源：
 - `https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt` -> `https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt`
 - 失败源：
@@ -136,7 +136,7 @@
 - 无
 
 ## GlobalProxy
-- 输出文件：`rule/list/non_ip/GlobalProxy.txt`（7213 条）
+- 输出文件：`rule/list/non_ip/GlobalProxy.txt`（7214 条）
 - 输出文件：`rule/list/ip/GlobalProxy.txt`（55 条）
 - 成功源：
 - `Proxy` -> `https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Proxy/Proxy.list`
