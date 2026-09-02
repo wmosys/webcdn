@@ -3,4 +3,9 @@
 #########################################
 DOMAIN-SUFFIX,bmjsub.org
 DOMAIN-SUFFIX,bjnet2.com
+DOMAIN-SUFFIX,docker.1ms.run
+DOMAIN-SUFFIX,docker.sparkcr.cn
+DOMAIN-SUFFIX,hub.rat.dev
+DOMAIN-SUFFIX,dockerproxy.net
+DOMAIN-SUFFIX,docker-registry.nmqu.com
 ################## EOF ##################
