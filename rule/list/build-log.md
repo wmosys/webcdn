@@ -1,10 +1,10 @@
 # 规则编译日志
 
-- 编译日期：2026-09-04 04:21:35 +0800
+- 编译日期：2026-09-05 04:07:28 +0800
 
 ## ChinaIP
 - 输出文件：`rule/list/non_ip/ChinaIP.txt`（0 条）
-- 输出文件：`rule/list/ip/ChinaIP.txt`（3899 条）
+- 输出文件：`rule/list/ip/ChinaIP.txt`（3896 条）
 - 成功源：
 - `https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt` -> `https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt`
 - 失败源：
