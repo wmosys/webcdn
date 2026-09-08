@@ -14,6 +14,7 @@ DOMAIN-SUFFIX,bmjsub.org
 DOMAIN-SUFFIX,bjnet2.com
 DOMAIN-SUFFIX,kkws.cn
 DOMAIN-SUFFIX,kayak.com.cn
+DOMAIN-SUFFIX,dash.cloudflare.com
 PROCESS-NAME,nebula
 PROCESS-NAME,nebula.exe
 PROCESS-NAME,kkwsvpn
