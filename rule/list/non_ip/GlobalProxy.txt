@@ -1,5 +1,5 @@
-# Build Date: 2026-09-02 04:22:11 +0800
-# Rule Count: 7224
+# Build Date: 2026-09-07 03:50:36 +0800
+# Rule Count: 7226
 # Source:
 #   - Proxy: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Proxy/Proxy.list
 #   - https://ruleset.skk.moe/Clash/non_ip/global.txt: https://ruleset.skk.moe/Clash/non_ip/global.txt
@@ -1255,6 +1255,7 @@ DOMAIN-SUFFIX,csuchen.de
 DOMAIN-SUFFIX,csw.org.uk
 DOMAIN-SUFFIX,ct.org.tw
 DOMAIN-SUFFIX,ctao.org
+DOMAIN-SUFFIX,ctee.com.tw
 DOMAIN-SUFFIX,ctfriend.net
 DOMAIN-SUFFIX,ctinets.com
 DOMAIN-SUFFIX,ctinews.com
@@ -3222,6 +3223,7 @@ DOMAIN-SUFFIX,linode.com
 DOMAIN-SUFFIX,linpie.com
 DOMAIN-SUFFIX,linux.do
 DOMAIN-SUFFIX,linux.org.hk
+DOMAIN-SUFFIX,linux.sb
 DOMAIN-SUFFIX,linuxtoy.org
 DOMAIN-SUFFIX,lionsroar.com
 DOMAIN-SUFFIX,lipuman.com
