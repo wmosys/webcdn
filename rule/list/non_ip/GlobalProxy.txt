@@ -1,5 +1,5 @@
-# Build Date: 2026-09-09 04:32:56 +0800
-# Rule Count: 7232
+# Build Date: 2026-09-13 03:58:13 +0800
+# Rule Count: 7233
 # Source:
 #   - Proxy: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Proxy/Proxy.list
 #   - https://ruleset.skk.moe/Clash/non_ip/global.txt: https://ruleset.skk.moe/Clash/non_ip/global.txt
@@ -6955,6 +6955,7 @@ DOMAIN-SUFFIX,awscloud.com
 DOMAIN-SUFFIX,badoocdn.com
 DOMAIN-SUFFIX,beacondb.net
 DOMAIN-SUFFIX,bitbucket.io
+DOMAIN-SUFFIX,boxcloud.com
 DOMAIN-SUFFIX,broadcom.com
 DOMAIN-SUFFIX,cbslocal.com
 DOMAIN-SUFFIX,circleci.com
