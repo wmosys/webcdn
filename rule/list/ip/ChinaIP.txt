@@ -1,5 +1,5 @@
-# Build Date: 2026-09-20 03:50:57 +0800
-# Rule Count: 3895
+# Build Date: 2026-09-21 04:05:45 +0800
+# Rule Count: 3896
 # Source:
 #   - https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt: https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt
 
@@ -1019,6 +1019,7 @@
 103.98.125.0/24
 103.98.127.0/24
 103.98.220.0/22
+103.98.224.0/22
 103.98.248.0/23
 103.98.252.0/22
 103.99.178.0/24
