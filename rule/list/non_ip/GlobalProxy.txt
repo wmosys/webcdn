@@ -1,5 +1,5 @@
-# Build Date: 2026-10-03 05:40:08 +0800
-# Rule Count: 7241
+# Build Date: 2026-10-05 04:44:09 +0800
+# Rule Count: 7243
 # Source:
 #   - Proxy: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Proxy/Proxy.list
 #   - https://ruleset.skk.moe/Clash/non_ip/global.txt: https://ruleset.skk.moe/Clash/non_ip/global.txt
@@ -6021,6 +6021,7 @@ DOMAIN-SUFFIX,wainao.me
 DOMAIN-SUFFIX,waiwaier.com
 DOMAIN-SUFFIX,walletconnect.com
 DOMAIN-SUFFIX,walletconnect.org
+DOMAIN-SUFFIX,wallhaven.cc
 DOMAIN-SUFFIX,wallmama.com
 DOMAIN-SUFFIX,wallornot.org
 DOMAIN-SUFFIX,wallpapercasa.com
@@ -6134,6 +6135,7 @@ DOMAIN-SUFFIX,wiki.kfd.me
 DOMAIN-SUFFIX,wikia.com
 DOMAIN-SUFFIX,wikibooks.org
 DOMAIN-SUFFIX,wikidata.org
+DOMAIN-SUFFIX,wikifunctions.org
 DOMAIN-SUFFIX,wikileaks-forum.com
 DOMAIN-SUFFIX,wikileaks.ch
 DOMAIN-SUFFIX,wikileaks.com
@@ -6146,12 +6148,14 @@ DOMAIN-SUFFIX,wikileaks.pl
 DOMAIN-SUFFIX,wikilivres.info
 DOMAIN-SUFFIX,wikimapia.org
 DOMAIN-SUFFIX,wikimedia.org
+DOMAIN-SUFFIX,wikimediafoundation.org
 DOMAIN-SUFFIX,wikinews.org
 DOMAIN-SUFFIX,wikipedia.com
 DOMAIN-SUFFIX,wikipedia.org
 DOMAIN-SUFFIX,wikiquote.org
 DOMAIN-SUFFIX,wikis.tw
 DOMAIN-SUFFIX,wikisource.org
+DOMAIN-SUFFIX,wikispecies.org
 DOMAIN-SUFFIX,wikiunblocked.org
 DOMAIN-SUFFIX,wikiversity.org
 DOMAIN-SUFFIX,wikivoyage.org
@@ -7195,7 +7199,6 @@ DOMAIN-SUFFIX,thaiheadlines.com
 DOMAIN-SUFFIX,trainingpeaks.com
 DOMAIN-SUFFIX,trycloudflare.com
 DOMAIN-SUFFIX,videodelivery.net
-DOMAIN-SUFFIX,wikifunctions.org
 DOMAIN-SUFFIX,xpressunblock.com
 DOMAIN-SUFFIX,adguardaccount.com
 DOMAIN-SUFFIX,cloudflareapps.com
@@ -7238,7 +7241,6 @@ DOMAIN-SUFFIX,precisionhydration.com
 DOMAIN-SUFFIX,airtableusercontent.com
 DOMAIN-SUFFIX,freedownloadmanager.org
 DOMAIN-SUFFIX,hubspotlinksstarter.com
-DOMAIN-SUFFIX,wikimediafoundation.org
 DOMAIN-SUFFIX,returnyoutubedislike.com
 DOMAIN-SUFFIX,onepluscommunityserver.com
 DOMAIN-SUFFIX,returnyoutubedislikeapi.com
