@@ -1,6 +1,6 @@
 # 规则编译日志
 
-- 编译日期：2026-10-08 06:29:55 +0800
+- 编译日期：2026-10-09 06:42:55 +0800
 
 ## ChinaIP
 - 输出文件：`rule/list/non_ip/ChinaIP.txt`（0 条）
@@ -34,7 +34,7 @@
 - 无
 
 ## CDN
-- 输出文件：`rule/list/non_ip/CDN.txt`（135 条）
+- 输出文件：`rule/list/non_ip/CDN.txt`（136 条）
 - 输出文件：`rule/list/ip/CDN.txt`（0 条）
 - 成功源：
 - `https://ruleset.skk.moe/Clash/domainset/cdn.txt` -> `https://ruleset.skk.moe/Clash/domainset/cdn.txt`
@@ -136,7 +136,7 @@
 - 无
 
 ## GlobalProxy
-- 输出文件：`rule/list/non_ip/GlobalProxy.txt`（7243 条）
+- 输出文件：`rule/list/non_ip/GlobalProxy.txt`（7275 条）
 - 输出文件：`rule/list/ip/GlobalProxy.txt`（55 条）
 - 成功源：
 - `Proxy` -> `https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Proxy/Proxy.list`
