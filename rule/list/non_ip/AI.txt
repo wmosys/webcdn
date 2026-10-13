@@ -1,5 +1,5 @@
-# Build Date: 2026-10-04 04:25:55 +0800
-# Rule Count: 52
+# Build Date: 2026-10-13 08:00:32 +0800
+# Rule Count: 55
 # Source:
 #   - https://ruleset.skk.moe/Clash/non_ip/ai.txt: https://ruleset.skk.moe/Clash/non_ip/ai.txt
 
@@ -38,9 +38,11 @@ DOMAIN,jules.google.com
 DOMAIN-SUFFIX,gemini.google.com
 DOMAIN-SUFFIX,notebooklm.google
 DOMAIN,antigravity.google
+DOMAIN,server.codeium.com
 DOMAIN,aida.googleapis.com
 DOMAIN-SUFFIX,aistudio.google.com
 DOMAIN-SUFFIX,generativeai.google
+DOMAIN,inference.codeium.com
 DOMAIN-SUFFIX,makersuite.google.com
 DOMAIN-SUFFIX,notebooklm.google.com
 DOMAIN,antigravity-unleash.goog
@@ -48,6 +50,7 @@ DOMAIN-SUFFIX,geller-pa.googleapis.com
 DOMAIN,gateway.ai.cloudflare.com
 DOMAIN,aisandbox-pa.googleapis.com
 DOMAIN-SUFFIX,cloudcode-pa.googleapis.com
+DOMAIN,server.self-serve.windsurf.com
 DOMAIN,robinfrontend-pa.googleapis.com
 DOMAIN,alkalicore-pa.clients6.google.com
 DOMAIN,daily-cloudcode-pa.googleapis.com

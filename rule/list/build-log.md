@@ -1,6 +1,6 @@
 # 规则编译日志
 
-- 编译日期：2026-10-12 05:19:38 +0800
+- 编译日期：2026-10-13 08:00:32 +0800
 
 ## ChinaIP
 - 输出文件：`rule/list/non_ip/ChinaIP.txt`（0 条）
@@ -24,7 +24,7 @@
 - 无
 
 ## AI
-- 输出文件：`rule/list/non_ip/AI.txt`（52 条）
+- 输出文件：`rule/list/non_ip/AI.txt`（55 条）
 - 输出文件：`rule/list/ip/AI.txt`（0 条）
 - 成功源：
 - `https://ruleset.skk.moe/Clash/non_ip/ai.txt` -> `https://ruleset.skk.moe/Clash/non_ip/ai.txt`
