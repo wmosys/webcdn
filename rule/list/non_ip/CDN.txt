@@ -1,5 +1,5 @@
-# Build Date: 2026-10-16 04:48:19 +0800
-# Rule Count: 135
+# Build Date: 2026-10-24 04:50:57 +0800
+# Rule Count: 136
 # Source:
 #   - https://ruleset.skk.moe/Clash/domainset/cdn.txt: https://ruleset.skk.moe/Clash/domainset/cdn.txt
 #   - https://ruleset.skk.moe/Clash/non_ip/cdn.txt: https://ruleset.skk.moe/Clash/non_ip/cdn.txt
@@ -91,6 +91,7 @@ DOMAIN-WILDCARD,cdn*.porn87.com
 DOMAIN-WILDCARD,cdn*.pornhost.com
 DOMAIN-WILDCARD,cdn*.boysfood.com
 DOMAIN-WILDCARD,rum-ingest.*.signalfx.com
+DOMAIN-WILDCARD,cf-images.*.prod.boltdns.net
 DOMAIN-SUFFIX,sdx.microsoft.com
 DOMAIN,res.cdn.office.net
 DOMAIN,res-1.cdn.office.net
