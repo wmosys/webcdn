@@ -1,10 +1,10 @@
 # 规则编译日志
 
-- 编译日期：2026-10-28 05:39:53 +0800
+- 编译日期：2026-10-29 06:04:03 +0800
 
 ## ChinaIP
 - 输出文件：`rule/list/non_ip/ChinaIP.txt`（0 条）
-- 输出文件：`rule/list/ip/ChinaIP.txt`（3883 条）
+- 输出文件：`rule/list/ip/ChinaIP.txt`（3886 条）
 - 成功源：
 - `https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt` -> `https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt`
 - 失败源：
@@ -13,7 +13,7 @@
 - 无
 
 ## Direct
-- 输出文件：`rule/list/non_ip/Direct.txt`（243 条）
+- 输出文件：`rule/list/non_ip/Direct.txt`（245 条）
 - 输出文件：`rule/list/ip/Direct.txt`（0 条）
 - 成功源：
 - `Direct` -> `https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Direct/Direct.list`
