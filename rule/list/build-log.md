@@ -1,10 +1,10 @@
 # 规则编译日志
 
-- 编译日期：2026-09-09 04:32:56 +0800
+- 编译日期：2026-10-28 05:39:53 +0800
 
 ## ChinaIP
 - 输出文件：`rule/list/non_ip/ChinaIP.txt`（0 条）
-- 输出文件：`rule/list/ip/ChinaIP.txt`（3892 条）
+- 输出文件：`rule/list/ip/ChinaIP.txt`（3883 条）
 - 成功源：
 - `https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt` -> `https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt`
 - 失败源：
@@ -24,7 +24,7 @@
 - 无
 
 ## AI
-- 输出文件：`rule/list/non_ip/AI.txt`（51 条）
+- 输出文件：`rule/list/non_ip/AI.txt`（55 条）
 - 输出文件：`rule/list/ip/AI.txt`（0 条）
 - 成功源：
 - `https://ruleset.skk.moe/Clash/non_ip/ai.txt` -> `https://ruleset.skk.moe/Clash/non_ip/ai.txt`
@@ -34,7 +34,7 @@
 - 无
 
 ## CDN
-- 输出文件：`rule/list/non_ip/CDN.txt`（135 条）
+- 输出文件：`rule/list/non_ip/CDN.txt`（136 条）
 - 输出文件：`rule/list/ip/CDN.txt`（0 条）
 - 成功源：
 - `https://ruleset.skk.moe/Clash/domainset/cdn.txt` -> `https://ruleset.skk.moe/Clash/domainset/cdn.txt`
@@ -136,7 +136,7 @@
 - 无
 
 ## GlobalProxy
-- 输出文件：`rule/list/non_ip/GlobalProxy.txt`（7232 条）
+- 输出文件：`rule/list/non_ip/GlobalProxy.txt`（7293 条）
 - 输出文件：`rule/list/ip/GlobalProxy.txt`（55 条）
 - 成功源：
 - `Proxy` -> `https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Proxy/Proxy.list`
