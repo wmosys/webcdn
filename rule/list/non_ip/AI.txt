@@ -1,5 +1,5 @@
-# Build Date: 2026-10-13 08:00:32 +0800
-# Rule Count: 55
+# Build Date: 2026-11-16 06:21:14 +0800
+# Rule Count: 58
 # Source:
 #   - https://ruleset.skk.moe/Clash/non_ip/ai.txt: https://ruleset.skk.moe/Clash/non_ip/ai.txt
 
@@ -26,6 +26,7 @@ DOMAIN-SUFFIX,chatgpt.site
 DOMAIN-SUFFIX,deepmind.com
 DOMAIN,ai.google.dev
 DOMAIN-SUFFIX,anthropic.com
+DOMAIN,cloud.zed.dev
 DOMAIN-SUFFIX,gemini.google
 DOMAIN-SUFFIX,oaistatic.com
 DOMAIN,openrouter.ai
@@ -42,6 +43,7 @@ DOMAIN,server.codeium.com
 DOMAIN,aida.googleapis.com
 DOMAIN-SUFFIX,aistudio.google.com
 DOMAIN-SUFFIX,generativeai.google
+DOMAIN,aicode.googleapis.com
 DOMAIN,inference.codeium.com
 DOMAIN-SUFFIX,makersuite.google.com
 DOMAIN-SUFFIX,notebooklm.google.com
@@ -56,5 +58,6 @@ DOMAIN,alkalicore-pa.clients6.google.com
 DOMAIN,daily-cloudcode-pa.googleapis.com
 DOMAIN-SUFFIX,generativelanguage.googleapis.com
 DOMAIN-SUFFIX,proactivebackend-pa.googleapis.com
+DOMAIN,daily-cloudcode-pa.sandbox.googleapis.com
 DOMAIN-KEYWORD,openai
 DOMAIN-KEYWORD,alkalimakersuite-pa.clients6.google.com
