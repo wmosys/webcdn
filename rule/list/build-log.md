@@ -1,10 +1,10 @@
 # 规则编译日志
 
-- 编译日期：2026-11-19 07:45:17 +0800
+- 编译日期：2026-11-20 08:06:22 +0800
 
 ## ChinaIP
 - 输出文件：`rule/list/non_ip/ChinaIP.txt`（0 条）
-- 输出文件：`rule/list/ip/ChinaIP.txt`（3894 条）
+- 输出文件：`rule/list/ip/ChinaIP.txt`（3906 条）
 - 成功源：
 - `https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt` -> `https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt`
 - 失败源：
@@ -24,7 +24,7 @@
 - 无
 
 ## AI
-- 输出文件：`rule/list/non_ip/AI.txt`（58 条）
+- 输出文件：`rule/list/non_ip/AI.txt`（60 条）
 - 输出文件：`rule/list/ip/AI.txt`（0 条）
 - 成功源：
 - `https://ruleset.skk.moe/Clash/non_ip/ai.txt` -> `https://ruleset.skk.moe/Clash/non_ip/ai.txt`
